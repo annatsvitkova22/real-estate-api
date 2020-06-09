@@ -1,0 +1,132 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: real-estate
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: regcred
+  namespace: real-estate
+data:
+  .dockerconfigjson: ewoJImF1dGhzIjogewoJCSJodHRwczovL2luZGV4LmRvY2tlci5pby92MS8iOiB7CgkJCSJhdXRoIjogImRteGhaSGx6YkdGMmNtOXRZVzVsYm10dk9rUjBjMTloY2pkemRIbHNaVGM9IgoJCX0KCX0sCgkiSHR0cEhlYWRlcnMiOiB7CgkJIlVzZXItQWdlbnQiOiAiRG9ja2VyLUNsaWVudC8xOS4wMy44IChkYXJ3aW4pIgoJfSwKCSJleHBlcmltZW50YWwiOiAiZGlzYWJsZWQiLAoJInN0YWNrT3JjaGVzdHJhdG9yIjogInN3YXJtIgp9Cg==
+type: kubernetes.io/dockerconfigjson
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: re-api
+    app.kubernetes.io/instance: real-estate
+    app.kubernetes.io/version: "0.0.1"
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: real-estate
+    app.kubernetes.io/managed-by: docker
+    environment: staging
+    tier: backend
+    partition: outright-digital
+  name: re-api
+  namespace: real-estate
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: re-api
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: re-api
+    spec:
+      containers:
+        - image: {{image}}
+          imagePullPolicy: "Always"
+          name: re-api
+          ports:
+            - containerPort: 3000
+      imagePullSecrets:
+        - name: regcred
+      restartPolicy: Always
+status: {}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: re-api
+    app.kubernetes.io/instance: real-estate
+    app.kubernetes.io/version: "0.0.1"
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: real-estate
+    app.kubernetes.io/managed-by: docker
+    environment: staging
+    tier: backend
+    partition: outright-digital
+  name: re-api
+  namespace: real-estate
+spec:
+  type: ClusterIP
+  ports:
+    - name: "80"
+      port: 80
+      targetPort: 3000
+  selector:
+    app.kubernetes.io/name: re-api
+status:
+  loadBalancer: {}
+
+---
+
+apiVersion: cert-manager.io/v1alpha2
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-re-api-prod
+  namespace: cert-manager
+  labels:
+    environment: production
+    tier: certificate
+    app.kubernetes.io/part-of: real-estate
+    partition: outright-digital
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: vlad@outright.digital
+    privateKeySecretRef:
+      name: letsencrypt-re-api-prod
+    solvers:
+      - http01:
+          ingress:
+            class: nginx
+
+---
+
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: re-api-ingress
+  namespace: real-estate
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-re-api-prod
+  labels:
+    environment: staging
+    tier: ingress
+    partition: outright-digital
+spec:
+  tls:
+    - hosts:
+        - re-api.outright.xyz
+      secretName: re-api-tls
+  rules:
+    - host: re-api.outright.xyz
+      http:
+        paths:
+          - backend:
+              serviceName: re-api
+              servicePort: 80

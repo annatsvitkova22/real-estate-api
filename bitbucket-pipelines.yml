@@ -1,0 +1,47 @@
+image: node:13.12.0
+
+definitions:
+  services:
+    docker:
+      memory: 3000
+
+pipelines:
+  branches:
+    develop:
+#      - step:
+#          name: Test
+#          caches:
+#            - node
+#          script:
+#            - apt-get update && apt-get install -yq libgconf-2-4
+#            - apt-get update && apt-get install -y wget --no-install-recommends && \
+#              wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -  && \
+#              sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' && \
+#              apt-get update && \
+#              apt-get install -y google-chrome-unstable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst ttf-freefont --no-install-recommends
+#            - npm install
+#            - npm rebuild
+#            - npm run test -- --no-watch --no-progress --browsers=ChromeHeadless
+#            - npm run e2e -- --protractor-config=e2e/protractor.conf.js
+      - step:
+          name: Build
+          size: 2x
+          script:
+            - export IMAGE_NAME=$DOCKER_HUB_USERNAME/$APPLICATION_NAME:$BITBUCKET_COMMIT
+            - docker build -t $IMAGE_NAME .
+            - docker login --username $DOCKER_HUB_USERNAME --password $DOCKER_HUB_PASSWORD
+            - docker push $IMAGE_NAME
+          services:
+            - docker
+      - step:
+          name: Deploy
+          deployment: staging
+          script:
+            - sed -i "s|{{image}}|$DOCKER_HUB_USERNAME/$APPLICATION_NAME:$BITBUCKET_COMMIT|g" deployment.yaml
+            - pipe: atlassian/kubectl-run:1.1.6
+              variables:
+                KUBE_CONFIG: $KUBE_CONFIG
+                KUBECTL_COMMAND: 'apply'
+                RESOURCE_PATH: 'deployment.yaml'
+                KUBECTL_ARGS:
+                  - '--namespace=real-estate'
