@@ -1,12 +1,12 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
-import { UserService } from 'src/services';
+import { UsersService } from 'src/user/user.service';
 
 @Injectable()
 export class AuthService {
     constructor(
-        @Inject(forwardRef(() => UserService)) private readonly userService: UserService,
+        @Inject(forwardRef(() => UsersService)) private readonly userService: UsersService,
         private jwtService: JwtService
     ) {}
 
@@ -25,5 +25,5 @@ export class AuthService {
         const access_token = this.jwtService.sign(payload);
 
         return access_token;
-    }   
+    }
 }
