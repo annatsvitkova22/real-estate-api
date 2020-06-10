@@ -1,1 +1,1 @@
-export * from 'src/models/environment.model';
+export * from './environment.model';

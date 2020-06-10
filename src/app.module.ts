@@ -4,12 +4,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AppController } from './app.controller';
-import { Enviroment } from 'src/models';
-import { getEnv } from 'src/environment';
+import { Environment } from './models';
+import { getEnv } from './environment';
 import { User } from './user/user.entity';
 import { UsersModule } from './user/user.module';
 
-const Environment: Enviroment = getEnv();
+const Env: Environment = getEnv();
 
 const {
   DB_PASSWORD,
@@ -32,8 +32,8 @@ const {
     }),
     PassportModule,
     JwtModule.register({
-      secret: Environment.tokenSecret,
-      signOptions: { expiresIn: Environment.tokenLife },
+      secret: Env.tokenSecret,
+      signOptions: { expiresIn: Env.tokenLife },
     }),
     UsersModule
   ],

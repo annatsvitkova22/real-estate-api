@@ -1,3 +1,3 @@
-export * from 'src/environment/environment.dev';
-export * from 'src/environment/environment.prod';
-export * from 'src/environment/environment';
+export * from './environment.dev';
+export * from './environment.prod';
+export * from './environment';
