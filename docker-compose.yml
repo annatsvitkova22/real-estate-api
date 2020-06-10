@@ -15,6 +15,8 @@ services:
     command: yarn start:dev
     env_file:
       - .env
+    environment:
+      DB_DATABASE_HOST: host.docker.internal
     networks:
       - webnet
     depends_on:
@@ -34,6 +36,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_DB: ${DB_DATABASE_NAME}
+      POSTGRES_HOST: ${DB_DATABASE_HOST}
       PG_DATA: /var/lib/postgresql/data
     ports:
       - 5432:5432
