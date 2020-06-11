@@ -7,7 +7,7 @@ import { AuthController } from 'src/controllers';
 import { AuthService, UserService } from 'src/services';
 import { Enviroment } from 'src/models';
 import { getEnv } from 'src/environment';
-import { LocalStrategy } from 'src/common';
+import { LocalStrategy, JwtStrategy } from 'src/common';
 
 const Envitonment: Enviroment = getEnv();
 @Module({
@@ -19,6 +19,6 @@ const Envitonment: Enviroment = getEnv();
     }),
   ],
   controllers: [AppController, AuthController],
-  providers: [AuthService, UserService, LocalStrategy]
+  providers: [AuthService, UserService, LocalStrategy, JwtStrategy]
 })
 export class AppModule {}

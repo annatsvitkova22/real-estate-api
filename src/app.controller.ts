@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 
 import { getEnv } from 'src/environment';
-import { Enviroment } from 'src/models'
+import { Enviroment } from 'src/models';
 
 @Controller()
 export class AppController {
