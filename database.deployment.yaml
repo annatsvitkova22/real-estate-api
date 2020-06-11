@@ -16,6 +16,7 @@ data:
   POSTGRES_PASSWORD: tQGUeLLyuVEtEvMb
   POSTGRES_USER: real-estate-admin
   POSTGRES_DB: real-estate-db
+  POSTGRES_HOST: re-postgres
 
 ---
 
