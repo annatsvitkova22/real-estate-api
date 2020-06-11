@@ -36,6 +36,9 @@ pipelines:
               variables:
                 KUBE_CONFIG: $KUBE_CONFIG
                 KUBECTL_COMMAND: 'apply'
+                RESOURCE_PATH: 'database.deployment.yaml'
+            - pipe: atlassian/kubectl-run:1.1.6
+              variables:
+                KUBE_CONFIG: $KUBE_CONFIG
+                KUBECTL_COMMAND: 'apply'
                 RESOURCE_PATH: 'deployment.yaml'
-                KUBECTL_ARGS:
-                  - '--namespace=real-estate'

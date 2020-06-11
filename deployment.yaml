@@ -64,29 +64,25 @@ spec:
           ports:
             - containerPort: 3000
           env:
-            - name: DB_DATABASE_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-secret
-                  key: DB_DATABASE_NAME
-            - name: DB_DATABASE_HOST
-              value: re-postgres
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-secret
-                  key: DB_PASSWORD
-            - name: DB_PORT
-              value: 5432
-            - name: DB_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-secret
-                  key: DB_USERNAME
-      initContainers:
-        - name: init-db
-          image: busybox
-          command: ['sh', '-c', 'until nc -z re-postgres:5432; do echo waiting for re-postgres; sleep 2; done;']
+          - name: DB_DATABASE_NAME
+            valueFrom:
+              secretKeyRef:
+                name: postgres-secret
+                key: DB_DATABASE_NAME
+          - name: DB_DATABASE_HOST
+            value: "re-postgres"
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgres-secret
+                key: DB_PASSWORD
+          - name: DB_PORT
+            value: "5432"
+          - name: DB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: postgres-secret
+                key: DB_USERNAME
       imagePullSecrets:
         - name: regcred
       restartPolicy: Always
