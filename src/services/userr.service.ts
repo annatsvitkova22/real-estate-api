@@ -27,7 +27,7 @@ export class UserrService {
     }
 
     public async createUser(createUser: UserModel): Promise<UserModel | string> {
-        const getUser: UserModel = {} as UserModel;
+        const getUser: User = {} as User;
         getUser.firstName = createUser.firstName;
         getUser.lastName = createUser.lastName;
         getUser.email = createUser.email;
@@ -39,7 +39,7 @@ export class UserrService {
         }
         const randomSalt = await this.getRandomSalt();
         getUser.salt = randomSalt;
-        const pass = await this.getHash(createUser.passwordHash, randomSalt);
+        const pass = await this.getHash(createUser.password, randomSalt);
         getUser.passwordHash = pass;
         user = await this.userRepository.save(getUser);
 
@@ -47,13 +47,13 @@ export class UserrService {
     }
 
     public async updateUser(updateUser: any): Promise<UserModel | string> {
-        const getUser: UserModel = {} as UserModel;
+        const getUser: User = {} as User;
         getUser.id = updateUser.id;
         getUser.firstName = updateUser.firstName;
         getUser.lastName = updateUser.lastName;
         getUser.passwordHash = updateUser.passwordHash;
         getUser.email = updateUser.email;
-        const toUpdate: UserModel = await this.userRepository.findOne(getUser.id);
+        const toUpdate: User = await this.userRepository.findOne(getUser.id);
         if(!toUpdate) {
             const message: string = 'user not found';
 
