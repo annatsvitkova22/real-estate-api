@@ -2,7 +2,7 @@ export class UserModel {
     id?: string;
     firstName?: string;
     lastName?: string;
-    passwordHash?: string;
+    password?: string;
     email?: string;
     salt?: string;
 }
