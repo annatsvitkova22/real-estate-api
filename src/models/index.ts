@@ -1,2 +1,2 @@
-export * from 'src/models/environment.model';
-export * from 'src/models/user.model';
+export * from './environment.model';
+export * from './user.model';

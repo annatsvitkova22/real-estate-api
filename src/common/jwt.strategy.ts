@@ -2,8 +2,8 @@ import { Injectable, UnauthorizedException, HttpException, HttpStatus } from '@n
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 
-import { getEnv } from 'src/environment';
-import { Enviroment, User } from 'src/models';
+import { getEnv } from '../environment';
+import { Enviroment, User } from '../models';
 
 const myEnvitonment: Enviroment = getEnv();
 

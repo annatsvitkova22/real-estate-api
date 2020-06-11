@@ -1,5 +1,5 @@
-import { environmentDev, environmentProd } from 'src/environment';
-import { Enviroment } from 'src/models';
+import { environmentDev, environmentProd } from './index';
+import { Enviroment } from '../models';
 
 export const getEnv = (): Enviroment => {
     let environment: Enviroment;

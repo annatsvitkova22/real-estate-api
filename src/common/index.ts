@@ -1,2 +1,2 @@
-export * from 'src/common/local.strategy';
-export * from 'src/common/jwt.strategy';
+export * from './local.strategy';
+export * from './jwt.strategy';

@@ -1,4 +1,4 @@
-import { Enviroment } from 'src/models';
+import { Enviroment } from '../models';
 
 const fs = require('fs');
 
