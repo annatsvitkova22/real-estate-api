@@ -136,4 +136,4 @@ spec:
     - port: 5432
       targetPort: 5432
   selector:
-    name: re-postgres
+    app.kubernetes.io/name: re-postgres
