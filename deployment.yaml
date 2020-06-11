@@ -8,22 +8,26 @@ metadata:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: regcred
+  name: postgres-secret
   namespace: real-estate
+  labels:
+    app.kubernetes.io/name: re-postgres
+type: Opaque
 data:
-  .dockerconfigjson: ewoJImF1dGhzIjogewoJCSJodHRwczovL2luZGV4LmRvY2tlci5pby92MS8iOiB7CgkJCSJhdXRoIjogImRteGhaSGx6YkdGMmNtOXRZVzVsYm10dk9rUjBjMTloY2pkemRIbHNaVGM9IgoJCX0KCX0sCgkiSHR0cEhlYWRlcnMiOiB7CgkJIlVzZXItQWdlbnQiOiAiRG9ja2VyLUNsaWVudC8xOS4wMy44IChkYXJ3aW4pIgoJfSwKCSJleHBlcmltZW50YWwiOiAiZGlzYWJsZWQiLAoJInN0YWNrT3JjaGVzdHJhdG9yIjogInN3YXJtIgp9Cg==
-type: kubernetes.io/dockerconfigjson
+  DB_DATABASE_NAME: cmVhbC1lc3RhdGUtZGI=
+  DB_USERNAME: cmVhbC1lc3RhdGUtYWRtaW4=
+  DB_PASSWORD: ZVJhTUtmVlJwQnRjQ0Jmeg==
 
 ---
 
 apiVersion: v1
 kind: Secret
 metadata:
-  name: postgres-secret
+  name: regcred
   namespace: real-estate
 data:
-  POSTGRES_USERNAME: cmVhbF9lc3RhdGVfYWRtaW4=
-  POSTGRES_PASSWORD: ZVJhTUtmVlJwQnRjQ0Jmeg==
+  .dockerconfigjson: ewoJImF1dGhzIjogewoJCSJodHRwczovL2luZGV4LmRvY2tlci5pby92MS8iOiB7CgkJCSJhdXRoIjogImRteGhaSGx6YkdGMmNtOXRZVzVsYm10dk9rUjBjMTloY2pkemRIbHNaVGM9IgoJCX0KCX0sCgkiSHR0cEhlYWRlcnMiOiB7CgkJIlVzZXItQWdlbnQiOiAiRG9ja2VyLUNsaWVudC8xOS4wMy44IChkYXJ3aW4pIgoJfSwKCSJleHBlcmltZW50YWwiOiAiZGlzYWJsZWQiLAoJInN0YWNrT3JjaGVzdHJhdG9yIjogInN3YXJtIgp9Cg==
+type: kubernetes.io/dockerconfigjson
 
 ---
 
@@ -60,78 +64,31 @@ spec:
           ports:
             - containerPort: 3000
         - env:
-          - name: POSTGRES_DB
+          - name: DB_DATABASE_NAME
             valueFrom:
-              configMapKeyRef:
-                key: POSTGRES_DB
-                name: real-estate-env
-          - name: POSTGRES_HOSTNAME
+              secretKeyRef:
+                name: postgres-secret
+                key: DB_DATABASE_NAME
+          - name: DB_DATABASE_HOST
             value: re-postgres
-          - name: POSTGRES_PASSWORD
+          - name: DB_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: postgres-secret
-                key: POSTGRES_PASSWORD
-          - name: POSTGRES_PORT
-            valueFrom:
-              configMapKeyRef:
-                key: POSTGRES_PORT
-                name: real-estate-env
-          - name: POSTGRES_USERNAME
+                key: DB_PASSWORD
+          - name: DB_PORT
+            value: 5432
+          - name: DB_USERNAME
             valueFrom:
               secretKeyRef:
                 name: postgres-secret
-                key: POSTGRES_USERNAME
+                key: DB_USERNAME
+      initContainers:
+        - name: init-db
+          image: busybox
+          command: ['sh', '-c', 'until nc -z re-postgres:5432; do echo waiting for re-postgres; sleep 2; done;']
       imagePullSecrets:
         - name: regcred
-      restartPolicy: Always
-status: {}
-
----
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    app.kubernetes.io/name: re-postgres
-    app.kubernetes.io/instance: real-estate
-    app.kubernetes.io/version: "0.0.1"
-    app.kubernetes.io/component: database
-    app.kubernetes.io/part-of: real-estate
-    app.kubernetes.io/managed-by: docker
-    environment: staging
-    tier: database
-    partition: outright-digital
-  name: re-postgres
-  namespace: real-estate
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: re-postgres
-  strategy: {}
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/name: re-postgres
-    spec:
-      containers:
-        - env:
-          - name: POSTGRES_INITDB_ROOT_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: postgres-secret
-                key: POSTGRES_PASSWORD
-          - name: POSTGRES_INITDB_ROOT_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: postgres-secret
-                key: POSTGRES_USERNAME
-        - image: postgres:12.3
-          imagePullPolicy: "Always"
-          name: re-postgres
-          ports:
-            - containerPort: 5432
       restartPolicy: Always
 status: {}
 
@@ -164,59 +121,6 @@ spec:
       command: ['sh', '-c', 'until nc -z re-postgres:5432; do echo waiting for re-postgres; sleep 2; done;']
   selector:
     app.kubernetes.io/name: re-api
-status:
-  loadBalancer: {}
-
----
-
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  labels:
-    app.kubernetes.io/name: re-postgres-data
-    app.kubernetes.io/instance: real-estate
-    app.kubernetes.io/version: "0.0.1"
-    app.kubernetes.io/component: pvc
-    app.kubernetes.io/part-of: real-estate
-    app.kubernetes.io/managed-by: docker
-    environment: staging
-    tier: pvc
-    partition: outright-digital
-  name: re-postgres-data
-  namespace: real-estate
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
-status: {}
-
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app.kubernetes.io/name: re-postgres
-    app.kubernetes.io/instance: real-estate
-    app.kubernetes.io/version: "0.0.1"
-    app.kubernetes.io/component: database
-    app.kubernetes.io/part-of: real-estate
-    app.kubernetes.io/managed-by: docker
-    environment: staging
-    tier: database
-    partition: outright-digital
-  name: re-postgres
-  namespace: real-estate
-spec:
-  type: ClusterIP
-  ports:
-    - name: "5432"
-      port: 5432
-      targetPort: 5432
-  selector:
-    app.kubernetes.io/name: re-postgres
 status:
   loadBalancer: {}
 

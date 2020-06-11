@@ -1,0 +1,138 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: real-estate
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: real-estate
+  labels:
+    app.kubernetes.io/name: re-postgres
+data:
+  POSTGRES_PASSWORD: tQGUeLLyuVEtEvMb
+  POSTGRES_USER: real-estate-admin
+  POSTGRES_DB: real-estate-db
+
+---
+
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: re-postgres-pv-volume
+  namespace: real-estate
+  labels:
+    app.kubernetes.io/name: re-postgres
+    app.kubernetes.io/instance: real-estate
+    app.kubernetes.io/version: "0.0.1"
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: real-estate
+    app.kubernetes.io/managed-by: docker
+    environment: staging
+    tier: pv
+    partition: outright-digital
+spec:
+  storageClassName: do-block-storage
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/mnt/data"
+
+---
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: re-postgres-pv-claim
+  namespace: real-estate
+  labels:
+    app.kubernetes.io/name: re-postgres
+    app.kubernetes.io/instance: real-estate
+    app.kubernetes.io/version: "0.0.1"
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: real-estate
+    app.kubernetes.io/managed-by: docker
+    environment: staging
+    tier: pvc
+    partition: outright-digital
+spec:
+  storageClassName: do-block-storage
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: re-postgres
+  namespace: real-estate
+  labels:
+    app.kubernetes.io/name: re-postgres
+    app.kubernetes.io/instance: real-estate
+    app.kubernetes.io/version: "0.0.1"
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: real-estate
+    app.kubernetes.io/managed-by: docker
+    environment: staging
+    tier: database
+    partition: outright-digital
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: re-postgres
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: re-postgres
+    spec:
+      containers:
+        - image: postgres:12.3
+          name: re-postgres
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: postgres-config
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgredb
+      volumes:
+        - name: postgredb
+          persistentVolumeClaim:
+            claimName: re-postgres-pv-claim
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: re-postgres
+  namespace: real-estate
+  labels:
+    app.kubernetes.io/name: re-postgres
+    app.kubernetes.io/instance: real-estate
+    app.kubernetes.io/version: "0.0.1"
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: real-estate
+    app.kubernetes.io/managed-by: docker
+    environment: staging
+    tier: database
+    partition: outright-digital
+spec:
+  type: NodePort
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    name: re-postgres
