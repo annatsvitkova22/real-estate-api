@@ -3,7 +3,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 
 import { getEnv } from '../environment';
-import { Enviroment, User } from '../models';
+import { Enviroment, AuthUserModel } from '../models';
 
 const myEnvitonment: Enviroment = getEnv();
 
@@ -17,7 +17,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         });
     }
 
-    public validate(payload): User {
+    public validate(payload): AuthUserModel {
         if (payload.accessToken) {
             throw  new HttpException({
                 status: HttpStatus.UNAUTHORIZED,
@@ -25,7 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             }, 401);
         }
 
-        const user: User = { username: payload.username };
+        const user: AuthUserModel = { username: payload.username };
         
         if (!user) {
             throw new UnauthorizedException();

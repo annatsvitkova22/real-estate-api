@@ -4,13 +4,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AppController } from './app.controller';
-import { AuthController } from './controllers';
-import { AuthService, UserService } from './services';
+import { AuthController, UserController, RolesController } from './controllers';
+import { AuthService, UserService, UserrService, RoleService } from './services';
 import { LocalStrategy, JwtStrategy } from './common';
 import { Enviroment } from './models';
 import { getEnv } from './environment';
-import { User } from './user/user.entity';
-import { UsersModule } from './user/user.module';
+import { User, LikeProduct, Role, UserInRole, Order, OrderItem, Payment, Product } from './entity';
 
 const Env: Enviroment = getEnv();
 
@@ -30,17 +29,17 @@ const {
       username: DB_USERNAME,
       password: DB_PASSWORD,
       database: DB_DATABASE_NAME,
-      entities: [User],
+      entities: [User, LikeProduct, Role, UserInRole, Order, OrderItem, Payment, Product],
       synchronize: true,
     }),
+    TypeOrmModule.forFeature([User, LikeProduct, Role, UserInRole, Order, OrderItem, Payment, Product]),
     PassportModule,
     JwtModule.register({
       secret: Env.tokenSecret,
       signOptions: { expiresIn: Env.tokenLife },
     }),
-    UsersModule
   ],
-  controllers: [AppController, AuthController],
-  providers: [AuthService, UserService, LocalStrategy, JwtStrategy]
+  controllers: [AppController, AuthController, UserController, RolesController],
+  providers: [AuthService, UserService, LocalStrategy, JwtStrategy, UserrService, RoleService]
 })
 export class AppModule {}
