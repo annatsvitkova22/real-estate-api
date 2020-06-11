@@ -1,29 +1,31 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
-import { UsersService } from '../user/user.service';
+import { UserService } from '../services';
+import { User } from '../models';
 
 @Injectable()
 export class AuthService {
     constructor(
-        @Inject(forwardRef(() => UsersService)) private readonly userService: UsersService,
+        @Inject(forwardRef(() => UserService)) private readonly userService: UserService,
         private jwtService: JwtService
     ) {}
 
-    async validateUser(username: string, pass: string): Promise<any> {
-        const user = await this.userService.findOne(username);
+    async validateUser(username: string, pass: string): Promise<User> {
+        const user: User = await this.userService.findOne(username);
         if (user && user.password === pass) {
-            const { password, ...result } = user;
-
+            const { password, ...result }: User = user;
+            
             return result;
         }
+
         return null;
     }
 
     async login(user: any): Promise<string> {
-        const payload = { username: user.username, sub: user.userId };
-        const access_token = this.jwtService.sign(payload);
+        const payload = { username: user.username };
+        const accessToken: string = this.jwtService.sign(payload);
 
-        return access_token;
-    }
+        return accessToken;
+    }   
 }

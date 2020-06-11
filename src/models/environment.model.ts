@@ -1,4 +1,4 @@
-export class Environment {
+export class Enviroment {
     production: boolean;
     name: string;
     tokenSecret: string;

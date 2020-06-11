@@ -4,12 +4,15 @@ import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AppController } from './app.controller';
-import { Environment } from './models';
+import { AuthController } from './controllers';
+import { AuthService, UserService } from './services';
+import { LocalStrategy, JwtStrategy } from './common';
+import { Enviroment } from './models';
 import { getEnv } from './environment';
 import { User } from './user/user.entity';
 import { UsersModule } from './user/user.module';
 
-const Env: Environment = getEnv();
+const Env: Enviroment = getEnv();
 
 const {
   DB_PASSWORD,
@@ -37,7 +40,7 @@ const {
     }),
     UsersModule
   ],
-  controllers: [AppController],
-  providers: [],
+  controllers: [AppController, AuthController],
+  providers: [AuthService, UserService, LocalStrategy, JwtStrategy]
 })
 export class AppModule {}

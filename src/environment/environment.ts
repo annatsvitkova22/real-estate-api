@@ -1,8 +1,8 @@
 import { environmentDev, environmentProd } from './index';
-import { Environment } from '../models';
+import { Enviroment } from '../models';
 
-export const getEnv = (): Environment => {
-    let environment: Environment;
+export const getEnv = (): Enviroment => {
+    let environment: Enviroment;
     environment = environmentDev;
 
     if (process.env.NODE_ENV === 'production') {
