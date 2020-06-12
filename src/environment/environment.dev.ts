@@ -7,4 +7,5 @@ export const environmentDev: Enviroment = {
     name: 'development',
     tokenSecret: fs.readFileSync('src/secrets/domain.key'),
     tokenLife: 1000,
+    refreshTokenLife: 31536000
 };

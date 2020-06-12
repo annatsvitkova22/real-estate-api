@@ -5,7 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AppController } from './app.controller';
 import { AuthController, UserController, RolesController } from './controllers';
-import { AuthService, UserService, UserrService, RoleService } from './services';
+import { AuthService, UserService, RoleService } from './services';
 import { LocalStrategy, JwtStrategy } from './common';
 import { Enviroment } from './models';
 import { getEnv } from './environment';
@@ -40,6 +40,6 @@ const {
     }),
   ],
   controllers: [AppController, AuthController, UserController, RolesController],
-  providers: [AuthService, UserService, LocalStrategy, JwtStrategy, UserrService, RoleService]
+  providers: [AuthService, LocalStrategy, JwtStrategy, UserService, RoleService]
 })
 export class AppModule {}

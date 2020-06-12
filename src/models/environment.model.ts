@@ -3,4 +3,5 @@ export class Enviroment {
     name: string;
     tokenSecret: string;
     tokenLife: number;
+    refreshTokenLife: number;
 }

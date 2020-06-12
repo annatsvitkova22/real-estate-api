@@ -7,4 +7,5 @@ export const environmentProd: Enviroment = {
     name: 'production',
     tokenSecret: fs.readFileSync('src/secrets/domain.key'),
     tokenLife: 1000,
+    refreshTokenLife: 15768000
 };

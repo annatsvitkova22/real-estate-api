@@ -2,7 +2,7 @@ import { Controller, Get, UseGuards, Post, Request } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
 import { AuthService } from '../services';
-import { AuthUserModel } from '../models';
+import { AuthUserModel, TokenModel } from '../models';
 
 @Controller('api')
 export class AuthController {
@@ -12,8 +12,8 @@ export class AuthController {
 
     @UseGuards(AuthGuard('local'))
     @Post('login')
-    public async login(@Request() req): Promise<any> {
-        const token = this.authService.login(req.user);
+    public async login(@Request() req): Promise<TokenModel> {
+        const token: TokenModel = await this.authService.getToken(req.user);
 
         return token;
     }

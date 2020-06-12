@@ -1,5 +1,6 @@
 export class AuthUserModel {
-    userId?: number;
+    userId?: string;
     username: string;
     password?: string;
+    firstName?: string;
 }

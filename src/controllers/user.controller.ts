@@ -1,13 +1,13 @@
 import { Controller, Post, Body, Get, Put, Delete, Param} from '@nestjs/common';
-
-import { UserrService } from '../services';
-import { UserModel } from '../models';
 import { DeleteResult } from 'typeorm';
+
+import { UserService } from '../services';
+import { UserModel } from '../models';
 
 @Controller('user')
 export class UserController {
     constructor(
-        private userService: UserrService,
+        private userService: UserService,
         ) { }
 
     @Get(':id')
