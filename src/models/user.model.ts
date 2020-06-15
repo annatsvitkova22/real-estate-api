@@ -6,4 +6,5 @@ export class UserModel {
     email?: string;
     salt?: string;
     role?: string;
+    passwordHash?: string;
 }

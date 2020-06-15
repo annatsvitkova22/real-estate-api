@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ConnectionOptions, createConnection } from 'typeorm';
+import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
 import { AuthUserModel, Enviroment, UserModel, TokenModel } from '../models';
-import { User, UserInRole, Role } from '../entity';
+import { UserInRole } from '../entity';
 import { getEnv } from '../environment';
 
 const jwt = require('jsonwebtoken');

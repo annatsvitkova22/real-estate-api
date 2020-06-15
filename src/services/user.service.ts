@@ -16,7 +16,8 @@ export class UserService {
     ) { }
 
     public async getUsers(): Promise<UserModel[]> {
-        const getUsers: UserModel[] = await this.userRepository.find();
+        const query: string = 'SELECT "user".id, "user"."firstName", "user"."lastName", "user".email, "role".name as "role" FROM "user_in_role" INNER JOIN "role" ON "user_in_role".role_id = "role".id INNER JOIN "user" ON "user_in_role".user_id = "user".id';
+        const getUsers: UserModel[] = await this.userInRoleRepository.query(query);
 
         return getUsers;
     }
@@ -43,9 +44,9 @@ export class UserService {
             return message;
         }
         
-        const randomSalt = await this.getRandomSalt();
+        const randomSalt: string = await this.getRandomSalt();
         getUser.salt = randomSalt;
-        const pass = await this.getHash(createUser.password, randomSalt);
+        const pass: string = await this.getHash(createUser.password, randomSalt);
         getUser.passwordHash = pass;
         user = await this.userRepository.save(getUser);
         if (!user) {
@@ -80,14 +81,16 @@ export class UserService {
         const userInRole: UserInRoleModel = {} as UserInRoleModel;
         userInRole.roleId = roleId;
         userInRole.userId = user.id;
-        const createdUserInRole = await this.userInRoleRepository.save(userInRole);
+        const createdUserInRole: UserInRole = await this.userInRoleRepository.save(userInRole);
         if (!createdUserInRole) {
             const message: string = 'user role not created';
 
             return message;
         }
         user.role = userRole;
-        
+        delete user.passwordHash;
+        delete user.salt;
+    
         return user;
     }
 
@@ -115,7 +118,21 @@ export class UserService {
         return user;
     }
 
-    public async deleteUser(userId: string): Promise<DeleteResult> {
+    public async deleteUser(userId: string): Promise<DeleteResult | string> {
+        const userInRoles: UserInRole[] = await this.userInRoleRepository.find({
+            where: [{userId: userId}]
+        });
+
+        if (userInRoles) {
+            userInRoles.forEach(async userInRole => {
+                const deletedUserInRoles: DeleteResult = await this.userInRoleRepository.delete(userInRole.id);
+                if(!deletedUserInRoles.affected) {
+                    const message: string = 'removal not completed, try again';
+    
+                    return message;
+                }
+            });
+        }
         const result: DeleteResult = await this.userRepository.delete(userId);
 
         return result;
@@ -127,8 +144,8 @@ export class UserService {
         return randomSalt;
     }
 
-    public async getHash(password: string, randomSalt: string) {
-        const result = bcrypt.hash(password, randomSalt);
+    public async getHash(password: string, randomSalt: string): Promise<string> {
+        const result: string = await bcrypt.hash(password, randomSalt);
 
         return result;
     }
