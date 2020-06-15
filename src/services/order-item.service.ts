@@ -82,8 +82,52 @@ export class OrderItemService {
         return orderItem;
     }
 
-    public async deleteOrderItem(orderItemId: string): Promise<DeleteResult> {
+    public async deleteOrderItem(orderItemId: string): Promise<DeleteResult | string> {
+        const getOrder: OrderItemModel = await this.getOrderItemById(orderItemId);
         const result: DeleteResult = await this.orderItemRepository.delete(orderItemId);
+        const getAllOrder: OrderItemModel[] = await this.getOrderItems();
+        const order: Order = {} as Order;
+        let message: string = '';
+        if(!getAllOrder) {
+            const deleteOrder: DeleteResult = await this.orderRepository.delete(getOrder.orderId);
+
+            if(deleteOrder) {
+                message = 'The order has not been deleted';
+
+                return message;
+            }
+        }
+        if(getAllOrder) {
+            const getOrderById: OrderModel = await this.orderRepository.findOne({
+                select: ['id', 'userId', 'paymentId', 'amount', 'count', 'currency'],
+                where: [{ userId: getOrder.orderId }],
+            });
+            const product: ProductModel = await this.productRepository.findOne({
+                select: ['currency', 'price'],
+                where: [{ id:  getOrder.productId }],
+            });
+
+            if(product.currency !== getOrderById.currency) {
+                //logic with convert currency
+            }
+            if(product.currency === getOrderById.currency) {
+                order.amount = getOrderById.amount - product.price;
+            }
+            order.id = getOrderById.id;
+            order.count = getOrderById.count - 1;
+            
+            delete getOrderById.amount;
+            delete getOrderById.count;
+            delete getOrderById.id;
+            const updated: OrderItem = Object.assign(getOrderById, order);
+            const updatedOrder: OrderItemModel = await this.orderRepository.save(updated);
+
+            if(!updatedOrder) {
+                message = 'The order has not been updated';
+
+                return message;
+            }
+        }
 
         return result;
     }

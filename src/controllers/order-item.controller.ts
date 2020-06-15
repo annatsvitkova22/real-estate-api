@@ -1,8 +1,8 @@
-import { Controller, Post, Body, Get, Put, Delete, Param} from '@nestjs/common';
+import { Controller, Post, Body, Get, Delete, Param} from '@nestjs/common';
+import { DeleteResult } from 'typeorm';
 
 import { OrderItemService } from '../services';
 import { OrderItemModel } from '../models';
-import { DeleteResult } from 'typeorm';
 
 @Controller('orderItem')
 export class OrderItemsController {
@@ -33,8 +33,8 @@ export class OrderItemsController {
     }
 
     @Delete(':id')
-    public async deleteOrderItem(@Param() params): Promise<DeleteResult> {
-        const result: DeleteResult = await this.orderItemService.deleteOrderItem(params.id);
+    public async deleteOrderItem(@Param() params): Promise<DeleteResult | string> {
+        const result: DeleteResult | string = await this.orderItemService.deleteOrderItem(params.id);
 
         return result;
     }
