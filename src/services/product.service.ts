@@ -63,7 +63,7 @@ export class ProductService {
         return product;
     }
 
-    public async deleteProduct(productId: number): Promise<DeleteResult> {
+    public async deleteProduct(productId: string): Promise<DeleteResult> {
         const result: DeleteResult = await this.productRepository.delete(productId);
         
         return result;
