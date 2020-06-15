@@ -6,3 +6,4 @@ export * from './token.model';
 export * from './user-role.model';
 export * from './product.model';
 export * from './like-product.model';
+export * from './payment.model';
