@@ -24,8 +24,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
                 error: 'This is a custom message',
             }, 401);
         }
-
-        const user: AuthUserModel = { username: payload.username };
+    
+        const user: AuthUserModel = { username: payload.firstName, userId: payload.userId };
         
         if (!user) {
             throw new UnauthorizedException();

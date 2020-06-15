@@ -21,6 +21,7 @@ export class AuthController {
     @UseGuards(AuthGuard('jwt'))
     @Get('me')
     public async getProfile(@Request() req): Promise<AuthUserModel> {
+
         return req.user;
     }
 }

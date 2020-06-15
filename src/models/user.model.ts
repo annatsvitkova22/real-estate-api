@@ -5,4 +5,5 @@ export class UserModel {
     password?: string;
     email?: string;
     salt?: string;
+    role?: string;
 }
