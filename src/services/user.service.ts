@@ -74,7 +74,6 @@ export class UserService {
     
                 return message;
             }
-            console.log('createRole', createRole);
             roleId = createRole.id;
         }
 
@@ -82,14 +81,12 @@ export class UserService {
         userInRole.roleId = roleId;
         userInRole.userId = user.id;
         const createdUserInRole = await this.userInRoleRepository.save(userInRole);
-        console.log('createdUserInRole', createdUserInRole);
         if (!createdUserInRole) {
             const message: string = 'user role not created';
 
             return message;
         }
         user.role = userRole;
-        console.log('findRole', findRole);
         
         return user;
     }

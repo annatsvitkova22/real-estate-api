@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, createQueryBuilder, ConnectionOptions, createConnection } from 'typeorm';
+import { Repository, ConnectionOptions, createConnection } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
 import { AuthUserModel, Enviroment, UserModel, TokenModel } from '../models';
@@ -12,40 +12,23 @@ const envitonment: Enviroment = getEnv();
 @Injectable()
 export class AuthService {
     constructor(
-        @InjectRepository(User) private userRepository: Repository<User>
+        @InjectRepository(UserInRole) private userInRoleRepository: Repository<UserInRole>
     ) {}
     
     public async validateUser(username: string, password: string): Promise<AuthUserModel> {
+        const query: string = `SELECT "user".id, "user"."firstName", "user"."passwordHash", "user".email, "role".name FROM "user_in_role" INNER JOIN "role" ON "user_in_role".role_id = "role".id INNER JOIN "user" ON "user_in_role".user_id = "user".id WHERE "user".email = '${username}'`;
 
-        const user: User = await this.userRepository.findOne({ email: username });
-        // const query: string = `SELECT 'user.id', 'user.firstName', 'user.passwordHash', 'user.email', 'role.name' FROM user_in_role INNER JOIN role ON 'user_in_role.role_id' = 'role.id' INNER JOIN user ON 'user_in_role.user_id' = 'user.id' WHERE 'user.email' = '${username}'`;
-        // const test = await createQueryBuilder("user")
-        //     .innerJoinAndSelect("role", "user_in_role.role_id")
-        //     .innerJoin("user", "user_in_role.user_id")
-        //     .where(`"user.email" = "${username}"`)
-        //     .getOne();
-        // const test1 = await this.userRepository.query(query);
-        // const test1 = await this.userRepository.find({
-        //     join: {
-        //         alias: "user_in_role",
-        //         innerJoinAndSelect: {
-        //             id: "user_in_role.id",
-        //             user_id: "user_in_role.user_id",
-        //             role_id: "user_in_role.role_id"
-        //         }
-        //     }
-        // });
-        // const test1 = await this.userRepository.query(query) 
-        // console.log('test', test1);
-        if (!user) {
+        const getUserWithRole: AuthUserModel = await this.userInRoleRepository.query(query);
+        if (!getUserWithRole) {
             return null;
         }
-        if (user) {
-            const getPassword: boolean = await this.compareHash(password, user.passwordHash);
+        if (getUserWithRole) {
+            const getPassword: boolean = await this.compareHash(password, getUserWithRole[0].passwordHash);
             if (getPassword) {
                 const result: AuthUserModel = {} as AuthUserModel;
-                result.firstName = user.firstName;
-                result.userId = user.id;
+                result.firstName = getUserWithRole[0].firstName;
+                result.userId = getUserWithRole[0].id;
+                result.role = getUserWithRole[0].name;
                 
                 return result;
             }

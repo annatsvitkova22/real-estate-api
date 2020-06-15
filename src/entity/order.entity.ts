@@ -12,7 +12,7 @@ export class Order {
     count?: number;
     @Column({name: 'user_id'})
     userId?: string;
-    @Column({name: 'payment_id'})
+    @Column({name: 'payment_id', default: null})
     paymentId?: string;
 
     @ManyToOne(() => User,  user => user.userConnection, {primary:
