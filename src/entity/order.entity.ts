@@ -8,6 +8,8 @@ export class Order {
     amount?: number;
     @Column()
     currency?: string;
+    @Column()
+    count?: number;
     @Column({name: 'user_id'})
     userId?: string;
     @Column({name: 'payment_id'})
