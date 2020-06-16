@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Put, Delete, Param} from '@nestjs/common';
+import { Controller, Post, Body, Get, Delete, Param} from '@nestjs/common';
 import { DeleteResult } from 'typeorm';
 
 import { PaymentService } from '../services';
@@ -19,15 +19,15 @@ export class PaymentController {
     }
 
     @Post()
-    public async createPayment(@Body() payment: PaymentModel): Promise<PaymentModel> {
-        const createdPayment: PaymentModel = await this.paymentService.createPayment(payment);
+    public async createPayment(@Body() payment: PaymentModel): Promise<PaymentModel | string> {
+        const createdPayment: PaymentModel | string = await this.paymentService.createPayment(payment);
 
         return createdPayment;
     }
 
     @Delete(':id')
-    public async deletePayment(@Param() params): Promise<DeleteResult> {
-        const result: DeleteResult = await this.paymentService.deletePayment(params.id);
+    public async deletePayment(@Param() params): Promise<DeleteResult | string> {
+        const result: DeleteResult | string = await this.paymentService.deletePayment(params.id);
 
         return result;
     }
