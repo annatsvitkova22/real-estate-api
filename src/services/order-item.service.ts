@@ -37,6 +37,13 @@ export class OrderItemService {
         getOrderItem.productId = createOrderItem.productId;
         getOrderItem.startTime = createOrderItem.startTime;
         getOrderItem.endTime = createOrderItem.endTime;
+        
+        if(getOrderItem.startTime > getOrderItem.endTime) {
+            const message: string = 'Date entered incorrectly';
+
+            return message;
+        }
+
 
         const getOrderByUserId: OrderModel = await this.orderRepository.findOne({
                 select: ['id', 'userId', 'paymentId', 'amount', 'count', 'currency'],
@@ -60,6 +67,14 @@ export class OrderItemService {
             updatedOrder = await this.orderRepository.save(order);
         }
         if(getOrderByUserId) {
+            const findOrderItem = await this.findOrderItem(getOrderByUserId.id, getOrderItem.productId);
+            if(findOrderItem) {
+                console.log('find')
+                const message: string = 'This order has already been added';
+
+                return message;
+            }
+
             if(product.currency !== getOrderByUserId.currency) {
                 const baseCurrency = getOrderByUserId.currency;
                 const currency = await fixer.set({ accessKey: API_KEY }).latest({ cbase: baseCurrency, symbols: [product.currency] });
@@ -173,5 +188,14 @@ export class OrderItemService {
         }
 
         return true;
+    }
+
+    public async findOrderItem(orderId: string, productId: string): Promise<OrderItemModel> {
+        const orderItem: OrderItemModel = await this.orderItemRepository.findOne({
+            select: ['id', 'productId', 'orderId', 'startTime', 'endTime'],
+            where: [{ orderId: orderId, productId: productId }],
+        });
+
+        return orderItem;
     }
 }
