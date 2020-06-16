@@ -6,3 +6,4 @@ export * from './like-product.service';
 export * from './payment.service';
 export * from './payment.service';
 export * from './order-item.service';
+export * from './order.service';
