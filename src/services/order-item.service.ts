@@ -5,6 +5,8 @@ import { Repository, DeleteResult } from 'typeorm';
 import { OrderItem, Order, Product } from '../entity';
 import { OrderItemModel, OrderModel, ProductModel } from '../models';
 
+const fixer = require("fixer-api");
+const API_KEY: string = "97e5ba209ccbf88dd92483ac163be7c0";
 @Injectable()
 export class OrderItemService {
 
@@ -22,7 +24,7 @@ export class OrderItemService {
 
     public async getOrderItemById(id: string): Promise<OrderItemModel> {
         const orderItem: OrderItemModel = await this.orderItemRepository.findOne({
-            select: ['productId', 'orderId', 'time'],
+            select: ['productId', 'orderId', 'startTime', 'endTime'],
             where: [{ id: id }],
         });
 
@@ -33,17 +35,20 @@ export class OrderItemService {
         const getOrderItem: OrderItem = {} as OrderItem;
         const order: Order = {} as Order;
         getOrderItem.productId = createOrderItem.productId;
-        getOrderItem.time = createOrderItem.time;
+        getOrderItem.startTime = createOrderItem.startTime;
+        getOrderItem.endTime = createOrderItem.endTime;
+
         const getOrderByUserId: OrderModel = await this.orderRepository.findOne({
-            select: ['id', 'userId', 'paymentId', 'amount', 'count', 'currency'],
-            where: [{ userId: createOrderItem.userId, paymentId: null }],
-        });
+                select: ['id', 'userId', 'paymentId', 'amount', 'count', 'currency'],
+                where: [{ userId: createOrderItem.userId, paymentId: null }],
+            });
+        
         const product: ProductModel = await this.productRepository.findOne({
             select: ['currency', 'price'],
             where: [{ id:  getOrderItem.productId }],
         });
 
-        let updatedOrder : OrderItemModel;
+        let updatedOrder : OrderModel;
         let message: string = '';
 
         if(!getOrderByUserId) {
@@ -56,7 +61,11 @@ export class OrderItemService {
         }
         if(getOrderByUserId) {
             if(product.currency !== getOrderByUserId.currency) {
-                //logic with convert currency
+                const baseCurrency = getOrderByUserId.currency;
+                const currency = await fixer.set({ accessKey: API_KEY }).latest({ cbase: baseCurrency, symbols: [product.currency] });
+                const index = currency.rates[product.currency];
+                const productPrice: number = +((product.price / index).toFixed(2));
+                order.amount = getOrderByUserId.amount + productPrice; 
             }
             if(product.currency === getOrderByUserId.currency) {
                 order.amount = getOrderByUserId.amount + product.price;
@@ -67,7 +76,7 @@ export class OrderItemService {
             delete getOrderByUserId.amount;
             delete getOrderByUserId.count;
             delete getOrderByUserId.id;
-            const updated: OrderItem = Object.assign(getOrderByUserId, order);
+            const updated: Order = Object.assign(getOrderByUserId, order);
             updatedOrder = await this.orderRepository.save(updated);
         }
 
@@ -76,7 +85,7 @@ export class OrderItemService {
 
             return message;
         }
-        
+        getOrderItem.orderId = updatedOrder.id;
         const orderItem: OrderItemModel = await this.orderItemRepository.save(getOrderItem);
         
         return orderItem;
@@ -108,7 +117,11 @@ export class OrderItemService {
             });
 
             if(product.currency !== getOrderById.currency) {
-                //logic with convert currency
+                const baseCurrency = getOrderById.currency;
+                const currency = await fixer.set({ accessKey: API_KEY }).latest({ cbase: baseCurrency, symbols: [product.currency] });
+                const index = currency.rates[product.currency];
+                const productPrice: number = +((product.price / index).toFixed(2));
+                order.amount = getOrderById.amount - productPrice; 
             }
             if(product.currency === getOrderById.currency) {
                 order.amount = getOrderById.amount - product.price;

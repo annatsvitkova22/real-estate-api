@@ -2,6 +2,7 @@ export class OrderItemModel {
     id?: string;
     productId?: string;
     orderId?: string;
-    time?: Date;
+    startTime?: Date;
+    endTime?: Date;
     userId?: string;
 }

@@ -4,7 +4,7 @@ import { User, Payment, OrderItem } from '../entity';
 export class Order {
     @PrimaryGeneratedColumn('uuid')
     id?: string;
-    @Column()
+    @Column('float')
     amount?: number;
     @Column()
     currency?: string;

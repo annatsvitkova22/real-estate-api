@@ -11,7 +11,9 @@ export class OrderItem {
     @Column({name: 'order_id'})
     orderId?: string;
     @Column()
-    time?: Date;
+    startTime?: Date;
+    @Column()
+    endTime?: Date;
 
     @ManyToOne(() => Product,  product => product.productConnection, {primary:
         true})
