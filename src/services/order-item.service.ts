@@ -131,4 +131,34 @@ export class OrderItemService {
 
         return result;
     }
+
+    public async deleteOrderItemByProductId(productId: string): Promise<boolean | string> {
+        const orderItemsByProductId = await this.orderItemRepository.find({
+            where: [{productId: productId}]
+        })
+        if(orderItemsByProductId) {
+            orderItemsByProductId.forEach(async orderItemByProductId => {
+                const orderId = orderItemByProductId.orderId;
+                const deletedOrderItem: DeleteResult = await this.orderItemRepository.delete(orderItemByProductId.id);
+                if(!deletedOrderItem.affected) {
+                    const message: string = 'removal not completed, try again';
+    
+                    return message;
+                }
+                const order = await this.orderRepository.findOne({
+                    where: [{id: orderId}]
+                });
+                if(order) {
+                    const deletedOrder = await this.orderRepository.delete(order.id);
+                    if(!deletedOrder.affected) {
+                        const message: string = 'removal not completed, try again';
+        
+                        return message;
+                    }
+                }
+            });
+        }
+
+        return true;
+    }
 }

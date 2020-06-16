@@ -1,18 +1,22 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, forwardRef, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DeleteResult } from 'typeorm';
 import * as bcrypt from 'bcrypt'
 
-import { User, Role, UserInRole } from '../entity';
-import { UserModel, RoleModel, UserInRoleModel } from '../models';
+import { User, UserInRole, Role, Product, LikeProduct } from '../entity';
+import { UserModel, UserInRoleModel, RoleModel } from '../models';
+import { OrderService } from './order.service';
 
 @Injectable()
 export class UserService {
     public saltRounds = 10;
     constructor(
         @InjectRepository(User) private userRepository: Repository<User>,
+        @InjectRepository(UserInRole) private userInRoleRepository: Repository<UserInRole>,
         @InjectRepository(Role) private roleRepository: Repository<Role>,
-        @InjectRepository(UserInRole) private userInRoleRepository: Repository<UserInRole>
+        @InjectRepository(Product) private productRepository: Repository<Product>,
+        @InjectRepository(LikeProduct) private likeProductRepository: Repository<LikeProduct>,
+        @Inject(forwardRef(() => OrderService)) private orderService: OrderService,
     ) { }
 
     public async getUsers(): Promise<UserModel[]> {
@@ -87,7 +91,7 @@ export class UserService {
 
             return message;
         }
-        user.role = userRole;
+        user.role = userRole;        
         delete user.passwordHash;
         delete user.salt;
     
@@ -133,6 +137,44 @@ export class UserService {
                 }
             });
         }
+        
+        const likeProductsByUserId: LikeProduct[] = await this.likeProductRepository.find({
+            where: [{userId: userId}]
+        });
+
+        if (likeProductsByUserId) {
+            likeProductsByUserId.forEach(async likeProductByUserId => {
+                const deletedLikeProduct: DeleteResult = await this.likeProductRepository.delete(likeProductByUserId.id);
+                if(!deletedLikeProduct.affected) {
+                    const message: string = 'removal not completed, try again';
+    
+                    return message;
+                }
+            });
+        }
+
+        const productsByUserId: Product[] = await this.productRepository.find({
+            where: [{userId: userId}]
+        });
+
+        if (productsByUserId) {
+            productsByUserId.forEach(async productByUserId => {
+                const deletedProduct: DeleteResult = await this.productRepository.delete(productByUserId.id);
+                if(!deletedProduct.affected) {
+                    const message: string = 'removal not completed, try again';
+    
+                    return message;
+                }
+            });
+        }
+
+        const deletedOrder: string | boolean = await this.orderService.deleteOrderByUser(userId);
+        if (deletedOrder !== true) {
+            const message: string = 'removal not completed, try again';
+            
+            return message;
+        }
+
         const result: DeleteResult = await this.userRepository.delete(userId);
 
         return result;
@@ -144,8 +186,8 @@ export class UserService {
         return randomSalt;
     }
 
-    public async getHash(password: string, randomSalt: string): Promise<string> {
-        const result: string = await bcrypt.hash(password, randomSalt);
+    public async getHash(password: string, randomSalt: string) {
+        const result: string = bcrypt.hash(password, randomSalt);
 
         return result;
     }

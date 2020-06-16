@@ -40,8 +40,8 @@ export class ProductController {
     }
 
     @Delete(':id')
-    public async deleteProduct(@Param() params): Promise<DeleteResult> {
-        const result: DeleteResult = await this.productService.deleteProduct(params.id);
+    public async deleteProduct(@Param() params): Promise<DeleteResult | string> {
+        const result: DeleteResult | string = await this.productService.deleteProduct(params.id);
 
         return result;
     }

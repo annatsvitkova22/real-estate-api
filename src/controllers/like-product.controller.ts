@@ -4,7 +4,7 @@ import { DeleteResult } from 'typeorm';
 import { LikeProductService } from '../services';
 import { LikeProductModel } from '../models';
 
-@Controller('like-product')
+@Controller('likeProduct')
 export class LikeProductController {
 
     constructor(

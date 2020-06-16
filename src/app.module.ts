@@ -4,8 +4,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AppController } from './app.controller';
-import { AuthController, UserController, RolesController, ProductController, LikeProductController, PaymentController, OrderItemsController } from './controllers';
-import { AuthService, UserService, RoleService, ProductService, LikeProductService, PaymentService, OrderItemService } from './services';
+import { AuthController, UserController, RolesController, ProductController, LikeProductController, PaymentController, OrderItemsController, OrderController } from './controllers';
+import { AuthService, UserService, RoleService, ProductService, LikeProductService, PaymentService, OrderItemService, OrderService } from './services';
 import { LocalStrategy, JwtStrategy } from './common';
 import { Enviroment } from './models';
 import { getEnv } from './environment';
@@ -39,7 +39,7 @@ const {
       signOptions: { expiresIn: Env.tokenLife },
     }),
   ],
-  controllers: [AppController, AuthController, UserController, RolesController, ProductController, LikeProductController, PaymentController, OrderItemsController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, UserService, RoleService, ProductService, LikeProductService, PaymentService, OrderItemService]
+  controllers: [AppController, AuthController, UserController, RolesController, ProductController, LikeProductController, PaymentController, OrderItemsController, OrderController],
+  providers: [AuthService, LocalStrategy, JwtStrategy, UserService, RoleService, ProductService, LikeProductService, PaymentService, OrderItemService, OrderService]
 })
 export class AppModule {}

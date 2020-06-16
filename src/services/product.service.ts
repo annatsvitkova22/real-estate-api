@@ -1,15 +1,18 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, forwardRef, Inject } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DeleteResult } from 'typeorm';
 
-import { Product } from '../entity';
+import { Product, LikeProduct } from '../entity';
 import { ProductModel } from '../models';
+import { OrderItemService } from '.';
 
 @Injectable()
 export class ProductService {
 
     constructor( 
-        @InjectRepository(Product) private productRepository: Repository<Product>
+        @InjectRepository(Product) private productRepository: Repository<Product>,
+        @InjectRepository(LikeProduct) private likeProductRepository: Repository<LikeProduct>,
+        @Inject(forwardRef(() => OrderItemService)) private orderItemService: OrderItemService,
     ) { }
 
     public async getProduct(): Promise<ProductModel[]> {
@@ -35,6 +38,7 @@ export class ProductService {
         getProduct.address = createProduct.address;
         getProduct.status = createProduct.status;
         getProduct.currency = createProduct.currency;
+        getProduct.userId = createProduct.userId;
         const product: ProductModel = await this.productRepository.save(getProduct);
 
         return product;
@@ -63,7 +67,29 @@ export class ProductService {
         return product;
     }
 
-    public async deleteProduct(productId: string): Promise<DeleteResult> {
+    public async deleteProduct(productId: string): Promise<DeleteResult | string> {
+        const likeProductsByUserId: LikeProduct[] = await this.likeProductRepository.find({
+            where: [{productId: productId}]
+        });
+
+        if (likeProductsByUserId) {
+            likeProductsByUserId.forEach(async likeProductByUserId => {
+                const deletedLikeProduct: DeleteResult = await this.likeProductRepository.delete(likeProductByUserId.id);
+                if(!deletedLikeProduct.affected) {
+                    const message: string = 'removal not completed, try again';
+    
+                    return message;
+                }
+            });
+        }
+
+        const deletedOrderItem: string | boolean = await this.orderItemService.deleteOrderItemByProductId(productId);
+        if (deletedOrderItem !== true) {
+            const message: string = 'removal not completed, try again';
+            
+            return message;
+        }
+
         const result: DeleteResult = await this.productRepository.delete(productId);
         
         return result;
