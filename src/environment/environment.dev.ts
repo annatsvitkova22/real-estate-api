@@ -7,5 +7,6 @@ export const environmentDev: Enviroment = {
     name: 'development',
     tokenSecret: fs.readFileSync('src/secrets/domain.key'),
     tokenLife: 1000,
-    refreshTokenLife: 31536000
+    refreshTokenLife: 31536000,
+    stripeApiKey: 'sk_test_4kwhS3Jsc0uRQZow1C7Q7b6I002UgJ1GHf'
 };

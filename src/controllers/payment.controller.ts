@@ -21,7 +21,7 @@ export class PaymentController {
     @Post()
     public async createPayment(@Body() payment: PaymentModel): Promise<PaymentModel | string> {
         const createdPayment: PaymentModel | string = await this.paymentService.createPayment(payment);
-
+        
         return createdPayment;
     }
 

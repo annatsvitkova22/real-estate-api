@@ -4,4 +4,5 @@ export class Enviroment {
     tokenSecret: string;
     tokenLife: number;
     refreshTokenLife: number;
+    stripeApiKey: string;
 }

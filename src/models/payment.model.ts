@@ -1,5 +1,9 @@
 export class PaymentModel {
     id?: string;
-    transactionId?: number;
+    email?: string;
+    source?: string;
+    currency?: string;
     orderId?: string;
+    amount?: number;
+    transactionId?: string;
 }

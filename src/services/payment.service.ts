@@ -3,8 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DeleteResult } from 'typeorm';
 
 import { Payment, Order } from '../entity';
-import { PaymentModel, OrderModel } from '../models';
+import { PaymentModel, OrderModel, Enviroment, StripeModel } from '../models';
+import { getEnv } from 'src/environment';
 
+const Envitonment: Enviroment = getEnv();
 @Injectable()
 export class PaymentService {
 
@@ -24,17 +26,27 @@ export class PaymentService {
 
     public async createPayment(createPayment: PaymentModel): Promise<PaymentModel | string> {
         const getPayment: Payment = {} as Payment;
-        getPayment.transactionId = createPayment.transactionId;
+        const order: OrderModel = await this.orderRepository.findOne({
+            where: [{ id: createPayment.orderId }]
+        })
+
+        if (!order) {
+            const message: string = 'order not found';
+
+            return message;
+        }
+        
+        const transactionId: StripeModel = await this.charge(createPayment);
+        console.log('transactionId', transactionId)
+        getPayment.transactionId = transactionId.id;
+        console.log('getPayment', getPayment);
         const payment: PaymentModel = await this.paymentRepository.save(getPayment);
+        console.log('payment', payment);
         if(!payment) {
             const message: string = 'payment was not saved';
 
             return message;
         }
-
-        const order: OrderModel = await this.orderRepository.findOne({
-            where: [{ id: createPayment.orderId }]
-        })
         const newOrder: Order = {} as Order;
         newOrder.paymentId = payment.id;
         delete order.paymentId;
@@ -66,5 +78,32 @@ export class PaymentService {
         const result: DeleteResult = await this.paymentRepository.delete(id);
         
         return result;
+    }
+
+    public async charge(payment: PaymentModel): Promise<StripeModel> {
+        const stripe = require('stripe')(Envitonment.stripeApiKey);
+        const customer = await stripe.customers.create({
+            email: payment.email,
+            source: payment.source,
+        });
+        const charge = await stripe.charges.create({
+            amount: payment.amount,
+            currency: payment.currency,
+            customer: customer.id,
+        });
+
+        if (charge.status === 'succeeded') {
+            const balanceTransactionId: StripeModel = {
+                id:  charge.id,
+                status: charge.status
+            };
+
+            return balanceTransactionId;
+        }
+        const message: StripeModel = {
+            status: charge.status,
+            message: 'Error'
+        }
+        return message;
     }
 }
