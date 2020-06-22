@@ -31,6 +31,15 @@ export class OrderItemService {
         return orderItem;
     }
 
+    public async getOrderItemByProductId(id: string): Promise<OrderItemModel[]> {
+        const orderItem: OrderItemModel[] = await this.orderItemRepository.find({
+            select: ['id', 'productId', 'orderId', 'startTime', 'endTime'],
+            where: [{ productId: id }],
+        });
+
+        return orderItem;
+    }
+
     public async createOrderItem(createOrderItem: OrderItemModel): Promise<OrderItemModel | string> {
         const getOrderItem: OrderItem = {} as OrderItem;
         const order: Order = {} as Order;
@@ -44,7 +53,26 @@ export class OrderItemService {
             return message;
         }
 
+        const getOrderItemsByProductId: OrderItemModel[] = await this.getOrderItemByProductId(getOrderItem.productId);
+        if (getOrderItemsByProductId.length > 0) {
+            let error: boolean = false;
 
+            getOrderItemsByProductId.forEach(getOrderItemByProductId => {
+                const startTime = new Date(getOrderItem.startTime);
+                const endTime = new Date(getOrderItem.endTime);
+                if(getOrderItemByProductId.startTime <= startTime && getOrderItemByProductId.endTime >= startTime || getOrderItemByProductId.startTime <= endTime && getOrderItemByProductId.endTime >= endTime) {
+
+                    error = true;
+                }
+            });
+            
+            if (error) {
+                const message: string = 'This time is reserved';
+
+                return message;
+            }
+        }
+        
         const getOrderByUserId: OrderModel = await this.orderRepository.findOne({
                 select: ['id', 'userId', 'paymentId', 'amount', 'count', 'currency'],
                 where: [{ userId: createOrderItem.userId, paymentId: null }],
@@ -67,14 +95,6 @@ export class OrderItemService {
             updatedOrder = await this.orderRepository.save(order);
         }
         if(getOrderByUserId) {
-            const findOrderItem = await this.findOrderItem(getOrderByUserId.id, getOrderItem.productId);
-            if(findOrderItem) {
-                console.log('find')
-                const message: string = 'This order has already been added';
-
-                return message;
-            }
-
             if(product.currency !== getOrderByUserId.currency) {
                 const baseCurrency = getOrderByUserId.currency;
                 const currency = await fixer.set({ accessKey: API_KEY }).latest({ cbase: baseCurrency, symbols: [product.currency] });
