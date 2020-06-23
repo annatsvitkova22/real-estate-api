@@ -46,6 +46,17 @@ export class OrderItemService {
         getOrderItem.productId = createOrderItem.productId;
         getOrderItem.startTime = createOrderItem.startTime;
         getOrderItem.endTime = createOrderItem.endTime;
+
+        const product: ProductModel = await this.productRepository.findOne({
+            select: ['currency', 'price'],
+            where: [{ id:  getOrderItem.productId }],
+        });
+
+        if (!product) {
+            const message: string = 'Product not found';
+
+            return message;
+        }
         
         if(getOrderItem.startTime > getOrderItem.endTime) {
             const message: string = 'Date entered incorrectly';
@@ -78,10 +89,6 @@ export class OrderItemService {
                 where: [{ userId: createOrderItem.userId, paymentId: null }],
             });
         
-        const product: ProductModel = await this.productRepository.findOne({
-            select: ['currency', 'price'],
-            where: [{ id:  getOrderItem.productId }],
-        });
 
         let updatedOrder : OrderModel;
         let message: string = '';

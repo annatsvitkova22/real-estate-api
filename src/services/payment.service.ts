@@ -35,13 +35,10 @@ export class PaymentService {
 
             return message;
         }
-        
+
         const transactionId: StripeModel = await this.charge(createPayment);
-        console.log('transactionId', transactionId)
         getPayment.transactionId = transactionId.id;
-        console.log('getPayment', getPayment);
         const payment: PaymentModel = await this.paymentRepository.save(getPayment);
-        console.log('payment', payment);
         if(!payment) {
             const message: string = 'payment was not saved';
 
