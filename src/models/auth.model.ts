@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class RoleModel {
+export class AuthModel {
     @ApiProperty()
-    id?: string;
+    username?: string;
     @ApiProperty()
-    name?: string;
+    password?: string;
 }

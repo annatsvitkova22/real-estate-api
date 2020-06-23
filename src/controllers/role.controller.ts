@@ -1,11 +1,14 @@
 import { Controller, Post, Body, Get, Put, Delete, Param, UseGuards} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { DeleteResult } from 'typeorm';
+import { ApiTags, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 
 import { RoleService } from '../services';
 import { RoleModel } from '../models';
 import { Roles } from '../common';
 
+@ApiBearerAuth('access-token')
+@ApiTags('Role')
 @Controller('role')
 export class RolesController {
 
@@ -16,6 +19,7 @@ export class RolesController {
     @UseGuards(AuthGuard('jwt'))
     @Get(':id')
     @Roles('admin')
+    @ApiParam({ name: 'id'})
     public async getRole(@Param() params): Promise<RoleModel> {
         const role: RoleModel = await this.roleService.getRoleById(params.id);
         
@@ -52,6 +56,7 @@ export class RolesController {
     @UseGuards(AuthGuard('jwt'))
     @Delete(':id')
     @Roles('admin')
+    @ApiParam({ name: 'id'})
     public async deleteRole(@Param() params): Promise<DeleteResult> {
         const result: DeleteResult = await this.roleService.deleteRole(params.id);
         

@@ -1,11 +1,14 @@
 import { Controller, Post, Body, Get, Delete, Param, UseGuards} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { DeleteResult } from 'typeorm';
+import { ApiTags, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 
 import { PaymentService } from '../services';
 import { PaymentModel } from '../models';
 import { Roles } from '../common';
 
+@ApiBearerAuth('access-token')
+@ApiTags('Payment')
 @Controller('payment')
 export class PaymentController {
 
@@ -16,6 +19,7 @@ export class PaymentController {
     @UseGuards(AuthGuard('jwt'))
     @Get(':id')
     @Roles('admin')
+    @ApiParam({ name: 'id'})
     public async getPaymentById(@Param() params): Promise<PaymentModel> {
         const payment: PaymentModel = await this.paymentService.getPaymentById(params.id);
 
@@ -34,6 +38,7 @@ export class PaymentController {
     @UseGuards(AuthGuard('jwt'))
     @Delete(':id')
     @Roles('admin')
+    @ApiParam({ name: 'id'})
     public async deletePayment(@Param() params): Promise<DeleteResult | string> {
         const result: DeleteResult | string = await this.paymentService.deletePayment(params.id);
 

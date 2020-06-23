@@ -1,11 +1,14 @@
-import { Controller, Post, Body, Get, Put, Delete, Param, UseGuards} from '@nestjs/common';
+import { Controller, Post, Body, Get, Delete, Param, UseGuards} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { DeleteResult } from 'typeorm';
+import { ApiTags, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 
 import { LikeProductService } from '../services';
 import { LikeProductModel } from '../models';
 import { Roles } from '../common';
 
+@ApiBearerAuth('access-token')
+@ApiTags('LikeProduct')
 @Controller('likeProduct')
 export class LikeProductController {
 
@@ -34,6 +37,7 @@ export class LikeProductController {
     @UseGuards(AuthGuard('jwt'))
     @Delete(':id')
     @Roles('user')
+    @ApiParam({ name: 'id'})
     public async deleteLikeProduct(@Param() params): Promise<DeleteResult> {
         const result: DeleteResult = await this.likeProductService.deleteLikeProduct(params.id);
 
