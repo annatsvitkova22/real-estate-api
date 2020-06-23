@@ -2,11 +2,12 @@ import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { APP_GUARD } from '@nestjs/core';
 
 import { AppController } from './app.controller';
 import { AuthController, UserController, RolesController, ProductController, LikeProductController, PaymentController, OrderItemsController, OrderController } from './controllers';
 import { AuthService, UserService, RoleService, ProductService, LikeProductService, PaymentService, OrderItemService, OrderService } from './services';
-import { LocalStrategy, JwtStrategy } from './common';
+import { LocalStrategy, JwtStrategy, RolesGuard } from './common';
 import { Enviroment } from './models';
 import { getEnv } from './environment';
 import { User, LikeProduct, Role, UserInRole, Order, OrderItem, Payment, Product } from './entity';
@@ -40,6 +41,11 @@ const {
     }),
   ],
   controllers: [AppController, AuthController, UserController, RolesController, ProductController, LikeProductController, PaymentController, OrderItemsController, OrderController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, UserService, RoleService, ProductService, LikeProductService, PaymentService, OrderItemService, OrderService]
+  providers: [AuthService, LocalStrategy, JwtStrategy, UserService, RoleService, ProductService, LikeProductService, PaymentService, OrderItemService, OrderService,
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ]
 })
 export class AppModule {}

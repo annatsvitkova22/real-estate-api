@@ -1,8 +1,10 @@
-import { Controller, Post, Body, Get, Delete, Param} from '@nestjs/common';
+import { Controller, Post, Body, Get, Delete, Param, UseGuards} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { DeleteResult } from 'typeorm';
 
 import { OrderItemService } from '../services';
 import { OrderItemModel } from '../models';
+import { Roles } from '../common';
 
 @Controller('orderItem')
 export class OrderItemsController {
@@ -11,28 +13,36 @@ export class OrderItemsController {
         private orderItemService: OrderItemService,
         ) { }
 
+    @UseGuards(AuthGuard('jwt'))
     @Get(':id')
+    @Roles('user')
     public async getOrderItemById(@Param() params): Promise<OrderItemModel> {
         const orderItem: OrderItemModel = await this.orderItemService.getOrderItemById(params.id);
 
         return orderItem;
     }
 
+    @UseGuards(AuthGuard('jwt'))
     @Get()
+    @Roles('user')
     public async getOrderItemAll(): Promise<OrderItemModel[]> {
         const orderItem: OrderItemModel[] = await this.orderItemService.getOrderItems();
 
         return orderItem;
     }
 
+    @UseGuards(AuthGuard('jwt'))
     @Post()
+    @Roles('user')
     public async createOrderItem(@Body() orderItem: OrderItemModel): Promise<OrderItemModel | string> {
         const createdOrderItem: OrderItemModel | string = await this.orderItemService.createOrderItem(orderItem);
 
         return createdOrderItem;
     }
 
+    @UseGuards(AuthGuard('jwt'))
     @Delete(':id')
+    @Roles('user')
     public async deleteOrderItem(@Param() params): Promise<DeleteResult | string> {
         const result: DeleteResult | string = await this.orderItemService.deleteOrderItem(params.id);
 
