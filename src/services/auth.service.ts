@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
-import { AuthUserModel, Enviroment, UserModel, TokenModel } from '../models';
+import { AuthUserModel, Enviroment, UserModel, TokenModel, PayloadTokenModel } from '../models';
 import { UserInRole } from '../entity';
 import { getEnv } from '../environment';
 
@@ -48,17 +48,40 @@ export class AuthService {
         return tokens;
     }
 
+    public async updateToken(refresh: string): Promise<TokenModel> {
+        const jwt = require('jsonwebtoken');
+        const user: PayloadTokenModel = jwt.decode(refresh);
+        const nowDate: string = new Date().toUTCString();
+        const date: number = Date.parse(nowDate) / 1000;
+    
+        if (user.exp > date) {
+            delete user.exp;
+            delete user.iat;
+        }
+        else {
+            throw  new HttpException({
+                status: HttpStatus.UNAUTHORIZED,
+                error: 'Login error, sign in',
+            }, 401);
+        }
+
+        const accessToken: string = await this.getAccess(user);
+        const refreshToken: string = await this.getRefresh(user);
+        const tokens: TokenModel = {
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+        };
+
+        return tokens;
+    }
+
     public async getAccess(user: UserModel): Promise<string> {
         const accessToken: string = await jwt.sign(user, envitonment.tokenSecret, { expiresIn: envitonment.tokenLife });
 
         return accessToken;
     }
 
-    public async getRefresh(payload: UserModel): Promise<string> {
-        const user: AuthUserModel = {
-            userId: payload.lastName,
-            username: payload.firstName,
-        };
+    public async getRefresh(user: UserModel): Promise<string> {
         const refreshToken: string = await jwt.sign(user, envitonment.tokenSecret, { expiresIn: envitonment.refreshTokenLife });
 
         return refreshToken;

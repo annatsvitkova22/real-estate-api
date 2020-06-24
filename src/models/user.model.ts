@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail } from "class-validator";
 
 export class UserModel {
     @ApiProperty()
@@ -10,6 +11,7 @@ export class UserModel {
     @ApiProperty()
     password?: string;
     @ApiProperty()
+    @IsEmail()
     email?: string;
     salt?: string;
     @ApiProperty()

@@ -32,6 +32,8 @@
     "@nestjs/typeorm": "^7.1.0",
     "@techhof-ab/currency-converter": "^2.0.0",
     "bcrypt": "^5.0.0",
+    "class-transformer": "^0.2.3",
+    "class-validator": "^0.12.2",
     "currency-convert": "^2.0.0",
     "fastify-swagger": "^2.6.0",
     "fixer-api": "^2.2.0",

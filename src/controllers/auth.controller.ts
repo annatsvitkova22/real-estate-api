@@ -1,9 +1,9 @@
-import { Controller, Get, UseGuards, Post, Request } from '@nestjs/common';
+import { Controller, Get, UseGuards, Post, Request, Body } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiBody, ApiCreatedResponse } from '@nestjs/swagger';
 
 import { AuthService } from '../services';
-import { AuthUserModel, TokenModel, AuthModel } from '../models';
+import { AuthUserModel, TokenModel, AuthModel, RefreshTokenModel } from '../models';
 
 @ApiTags('Auth')
 @Controller('api')
@@ -17,9 +17,20 @@ export class AuthController {
     @ApiBody({ type: AuthModel })
     @ApiCreatedResponse({ description: 'User authorization', type: TokenModel })
     public async login(@Request() req): Promise<TokenModel> {
-        const token: TokenModel = await this.authService.getToken(req.user);
+        const tokens: TokenModel = await this.authService.getToken(req.user);
 
-        return token;
+        return tokens;
+    }
+
+
+    @Post('refresh') 
+    @ApiBody({ type: RefreshTokenModel })
+    @ApiCreatedResponse({ description: 'Validate user authorization', type: TokenModel })
+    public async validate(@Body() token: RefreshTokenModel): Promise<TokenModel> {
+        console.log('refreshToken', token.refreshToken)
+        const tokens: TokenModel = await this.authService.updateToken(token.refreshToken);
+
+        return tokens;
     }
 
     @UseGuards(AuthGuard('jwt'))
