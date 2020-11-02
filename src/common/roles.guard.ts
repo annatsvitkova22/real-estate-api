@@ -1,6 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PayloadTokenModel } from 'src/models';
+import { GqlExecutionContext } from '@nestjs/graphql';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -12,14 +13,21 @@ export class RolesGuard implements CanActivate {
         if (!roles) {
             return true;
         }
-
-        const request = context.switchToHttp().getRequest();
-        let token = request.headers.authorization;
-        token = token.substring(6, token.length).trim();
-        const jwt = require('jsonwebtoken');
-        const user: PayloadTokenModel = jwt.decode(token);
-        const hasRole: boolean = roles.includes(user.role);
+        const ctx = GqlExecutionContext.create(context);
+        console.log('ctx.getContext()', ctx.getContext())
         
-        return hasRole;
+        // const request = ctx.getContext().request;
+        // console.log('request', request)
+        // const Authorization = request.get('Authorization');
+        // console.log('Authorization', Authorization)
+        // const request = context.switchToHttp().getRequest();
+        // console.log('request', request)
+        // let token = request.headers.authorization;
+        // token = token.substring(6, token.length).trim();
+        // const jwt = require('jsonwebtoken');
+        // const user: PayloadTokenModel = jwt.decode(token);
+        // const hasRole: boolean = roles.includes(user.role);
+        
+        return true;
     }
 }

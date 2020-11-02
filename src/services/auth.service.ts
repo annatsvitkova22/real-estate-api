@@ -2,12 +2,12 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+const jwt = require('jsonwebtoken');
 
 import { AuthUserModel, Enviroment, UserModel, TokenModel, PayloadTokenModel } from '../models';
 import { UserInRole } from '../entity';
 import { getEnv } from '../environment';
 
-const jwt = require('jsonwebtoken');
 const envitonment: Enviroment = getEnv();
 @Injectable()
 export class AuthService {
@@ -49,21 +49,19 @@ export class AuthService {
     }
 
     public async updateToken(refresh: string): Promise<TokenModel> {
-        const jwt = require('jsonwebtoken');
-        const user: PayloadTokenModel = jwt.decode(refresh);
-        const nowDate: string = new Date().toUTCString();
-        const date: number = Date.parse(nowDate) / 1000;
-    
-        if (user.exp > date) {
-            delete user.exp;
-            delete user.iat;
-        }
-        else {
-            throw  new HttpException({
-                status: HttpStatus.UNAUTHORIZED,
-                error: 'Login error, sign in',
-            }, 401);
-        }
+        let user: PayloadTokenModel;
+        jwt.verify(refresh, envitonment.tokenSecret, (err, decoded) => {
+            if (err) {
+                throw  new HttpException({
+                    status: HttpStatus.UNAUTHORIZED,
+                    error: 'Login error, sign in',
+                }, 401);
+            } else {
+                user = decoded;
+                delete user.exp;
+                delete user.iat;
+            }
+        });
 
         const accessToken: string = await this.getAccess(user);
         const refreshToken: string = await this.getRefresh(user);

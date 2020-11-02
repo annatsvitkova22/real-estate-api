@@ -18,6 +18,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     public validate(payload): AuthUserModel {
+        console.log('1111111')
         if (payload.accessToken) {
             throw  new HttpException({
                 status: HttpStatus.UNAUTHORIZED,
