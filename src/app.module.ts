@@ -3,6 +3,8 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_GUARD } from '@nestjs/core';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { config } from 'dotenv';
 
 import { AppController } from './app.controller';
 import { AuthController, UserController, RolesController, ProductController, LikeProductController, PaymentController, OrderItemsController, OrderController } from './controllers';
@@ -13,13 +15,7 @@ import { getEnv } from './environment';
 import { User, LikeProduct, Role, UserInRole, Order, OrderItem, Payment, Product } from './entity';
 
 const Env: Enviroment = getEnv();
-
-const {
-  DB_PASSWORD,
-  DB_USERNAME,
-  DB_DATABASE_NAME,
-  DB_DATABASE_HOST
-} = process.env;
+config();
 
 @Module({
   imports: [
