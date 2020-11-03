@@ -23,15 +23,21 @@ const {
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: DB_DATABASE_HOST,
-      port: 5432,
-      username: DB_USERNAME,
-      password: DB_PASSWORD,
-      database: DB_DATABASE_NAME,
-      entities: [User, LikeProduct, Role, UserInRole, Order, OrderItem, Payment, Product],
-      synchronize: true,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres',
+        host: config.get<string>('DB_DATABASE_HOST'),
+        port: 5432,
+        username: config.get<string>('DB_USERNAME'),
+        password: config.get<string>('DB_PASSWORD'),
+        database: config.get<string>('DB_DATABASE_NAME'),
+        entities: [User, LikeProduct, Role, UserInRole, Order, OrderItem, Payment, Product],
+        synchronize: true,
+      })
     }),
     TypeOrmModule.forFeature([User, LikeProduct, Role, UserInRole, Order, OrderItem, Payment, Product]),
     PassportModule,
