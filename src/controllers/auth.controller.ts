@@ -27,7 +27,6 @@ export class AuthController {
     @ApiBody({ type: RefreshTokenModel })
     @ApiCreatedResponse({ description: 'Validate user authorization', type: TokenModel })
     public async validate(@Body() token: RefreshTokenModel): Promise<TokenModel> {
-        console.log('refreshToken', token.refreshToken)
         const tokens: TokenModel = await this.authService.updateToken(token.refreshToken);
 
         return tokens;

@@ -3,6 +3,9 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_GUARD } from '@nestjs/core';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { GraphQLModule } from '@nestjs/graphql';
+import { config } from 'dotenv';
 
 import { AppController } from './app.controller';
 import { AuthController, UserController, RolesController, ProductController, LikeProductController, PaymentController, OrderItemsController, OrderController } from './controllers';
@@ -11,27 +14,28 @@ import { LocalStrategy, JwtStrategy, RolesGuard } from './common';
 import { Enviroment } from './models';
 import { getEnv } from './environment';
 import { User, LikeProduct, Role, UserInRole, Order, OrderItem, Payment, Product } from './entity';
+import { MessagesModule } from './messages/messages.module';
 
 const Env: Enviroment = getEnv();
-
-const {
-  DB_PASSWORD,
-  DB_USERNAME,
-  DB_DATABASE_NAME,
-  DB_DATABASE_HOST
-} = process.env;
+config();
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: DB_DATABASE_HOST,
-      port: 5432,
-      username: DB_USERNAME,
-      password: DB_PASSWORD,
-      database: DB_DATABASE_NAME,
-      entities: [User, LikeProduct, Role, UserInRole, Order, OrderItem, Payment, Product],
-      synchronize: true,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres',
+        host: config.get<string>('DB_DATABASE_HOST'),
+        port: 5432,
+        username: config.get<string>('DB_USERNAME'),
+        password: config.get<string>('DB_PASSWORD'),
+        database: config.get<string>('DB_DATABASE_NAME'),
+        entities: [User, LikeProduct, Role, UserInRole, Order, OrderItem, Payment, Product],
+        synchronize: true,
+      })
     }),
     TypeOrmModule.forFeature([User, LikeProduct, Role, UserInRole, Order, OrderItem, Payment, Product]),
     PassportModule,
@@ -39,6 +43,12 @@ const {
       secret: Env.tokenSecret,
       signOptions: { expiresIn: Env.tokenLife },
     }),
+    GraphQLModule.forRoot({
+      typePaths: ['./**/*.graphql'],
+      installSubscriptionHandlers: true,
+      context: ({ req }) => ({ ...req })
+    }),
+    MessagesModule,
   ],
   controllers: [AppController, AuthController, UserController, RolesController, ProductController, LikeProductController, PaymentController, OrderItemsController, OrderController],
   providers: [AuthService, LocalStrategy, JwtStrategy, UserService, RoleService, ProductService, LikeProductService, PaymentService, OrderItemService, OrderService,
