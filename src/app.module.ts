@@ -15,6 +15,7 @@ import { Enviroment } from './models';
 import { getEnv } from './environment';
 import { User, LikeProduct, Role, UserInRole, Order, OrderItem, Payment, Product } from './entity';
 import { MessagesModule } from './messages/messages.module';
+import { AuthGuard } from './common/auth.guard';
 
 const Env: Enviroment = getEnv();
 config();
@@ -51,7 +52,7 @@ config();
     MessagesModule,
   ],
   controllers: [AppController, AuthController, UserController, RolesController, ProductController, LikeProductController, PaymentController, OrderItemsController, OrderController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, UserService, RoleService, ProductService, LikeProductService, PaymentService, OrderItemService, OrderService,
+  providers: [AuthService, AuthGuard, LocalStrategy, JwtStrategy, UserService, RoleService, ProductService, LikeProductService, PaymentService, OrderItemService, OrderService,
     {
       provide: APP_GUARD,
       useClass: RolesGuard,

@@ -12,12 +12,11 @@ export class RolesGuard implements CanActivate {
 
     public canActivate(context: ExecutionContext): boolean {
         const roles = this.reflector.get<string[]>('roles', context.getHandler());
-        console.log('roles', roles)
+
         if (!roles) {
-            console.log('000000')
             return true;
         }
-        console.log('66666')
+
         const ctx = GqlExecutionContext.create(context);
         let token = ctx.getContext().headers.authorization;
         token = token.substring(6, token.length).trim();

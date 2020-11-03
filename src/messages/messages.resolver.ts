@@ -1,8 +1,8 @@
-import { Query, Mutation, Resolver, Args, Int, GraphQLExecutionContext, Context } from '@nestjs/graphql';
-import { AuthGuard } from '@nestjs/passport';
-import { UseGuards } from '@nestjs/common';
+import { Query, Mutation, Resolver, Args, Int } from '@nestjs/graphql';
 
 import { Roles } from '../common';
+import { UseGuards } from '@nestjs/common';
+import { AuthGuard } from 'src/common/auth.guard';
 
 @Resolver() 
 export class MessagesResolver {
@@ -18,7 +18,7 @@ export class MessagesResolver {
     }
 
     @Query('message')
-    @UseGuards(AuthGuard('jwt'))
+    @UseGuards(AuthGuard)
     message() {
         return this.messagesThstReallyShouldBeInADB
     }
