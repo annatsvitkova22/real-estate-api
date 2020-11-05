@@ -15,13 +15,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             ignoreExpiration: false,
             secretOrKey: myEnvitonment.tokenSecret,
         });
-        console.log('44444')
-        console.log('jwtFromRequest', ExtractJwt.fromAuthHeaderAsBearerToken())
     }
 
     public validate(payload): AuthUserModel {
-        console.log('11111111')
-        console.log('2222', payload)
         if (payload.accessToken) {
             throw  new HttpException({
                 status: HttpStatus.UNAUTHORIZED,

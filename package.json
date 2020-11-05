@@ -55,6 +55,7 @@
     "rxjs": "^6.5.4",
     "stripe": "^8.64.0",
     "swagger-ui-express": "^4.1.4",
+    "type-graphql": "^1.1.0",
     "typeorm": "^0.2.25"
   },
   "devDependencies": {

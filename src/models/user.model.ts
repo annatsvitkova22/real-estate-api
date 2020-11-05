@@ -1,20 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail } from "class-validator";
+import { ObjectType, Field } from '@nestjs/graphql';
 
+@ObjectType()
 export class UserModel {
-    @ApiProperty()
+    @Field()
     id?: string;
-    @ApiProperty()
+    @Field()
     firstName?: string;
-    @ApiProperty()
+    @Field()
     lastName?: string;
-    @ApiProperty()
+    @Field()
     password?: string;
-    @ApiProperty()
-    @IsEmail()
+    @Field()
     email?: string;
-    salt?: string;
-    @ApiProperty()
+    // salt?: string;
+    @Field()
     role?: string;
-    passwordHash?: string;
+    // passwordHash?: string;
 }

@@ -1,4 +1,4 @@
-import { Injectable, forwardRef, Inject } from '@nestjs/common';
+import { Injectable, forwardRef, Inject, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DeleteResult } from 'typeorm';
 import * as bcrypt from 'bcrypt'
@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt'
 import { User, UserInRole, Role, Product, LikeProduct } from '../entity';
 import { UserModel, UserInRoleModel, RoleModel } from '../models';
 import { OrderService } from './order.service';
+import { CreateUser } from '../inputType/create-user.inputType';
 
 @Injectable()
 export class UserService {
@@ -32,6 +33,74 @@ export class UserService {
             where: [{ id: id }],
         });
 
+        return user;
+    }
+
+    async singUp(createUser: CreateUser): Promise<UserModel>  {
+        const getUser: User = {} as User;
+        getUser.firstName = createUser.firstName;
+        getUser.lastName = createUser.lastName;
+        getUser.email = createUser.email;
+        let userRole: string = '';
+        let user: UserModel = await this.userRepository.findOne({ email: getUser.email });
+        if (user) {
+            throw  new HttpException({
+                status: 406,
+                error: 'user with this email already exists',
+            }, 406);
+        }
+        
+        const randomSalt: string = await this.getRandomSalt();
+        getUser.salt = randomSalt;
+        const pass: string = await this.getHash(createUser.password, randomSalt);
+        getUser.passwordHash = pass;
+        user = await this.userRepository.save(getUser);
+        if (!user) {
+            throw  new HttpException({
+                status: 406,
+                error: 'user not created',
+            }, 406);
+        }
+        if (createUser.role) {
+            userRole = createUser.role;
+        }
+        if (!createUser.role) {
+            userRole = 'user';
+        }
+        const findRole: RoleModel = await this.roleRepository.findOne({ name: userRole });
+        let roleId: string = '';
+        
+        if (findRole) {
+            roleId = findRole.id;
+        }
+        if (!findRole) {
+            const role: RoleModel = {} as RoleModel;
+            role.name = userRole;
+            const createRole: RoleModel = await this.roleRepository.save(role);
+            if (!createRole) {
+                throw  new HttpException({
+                    status: 406,
+                    error: 'role not created',
+                }, 406);
+            }
+            roleId = createRole.id;
+        }
+
+        const userInRole: UserInRoleModel = {} as UserInRoleModel;
+        userInRole.roleId = roleId;
+        userInRole.userId = user.id;
+        const createdUserInRole: UserInRole = await this.userInRoleRepository.save(userInRole);
+        if (!createdUserInRole) {
+            throw  new HttpException({
+                status: 406,
+                error: 'user role not created',
+            }, 406);
+        }
+
+        user.role = userRole;        
+        // delete user.passwordHash;
+        // delete user.salt;
+    
         return user;
     }
 
@@ -92,8 +161,8 @@ export class UserService {
             return message;
         }
         user.role = userRole;        
-        delete user.passwordHash;
-        delete user.salt;
+        // delete user.passwordHash;
+        // delete user.salt;
     
         return user;
     }
@@ -117,6 +186,7 @@ export class UserService {
         delete toUpdate.email;
         delete getUser.id;
         const updated: UserModel = Object.assign(toUpdate, getUser);
+        // this.userRepository.update({id: getUser.id}, {})
         const user: UserModel = await this.userRepository.save(updated);
 
         return user;

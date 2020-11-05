@@ -16,6 +16,7 @@ import { getEnv } from './environment';
 import { User, LikeProduct, Role, UserInRole, Order, OrderItem, Payment, Product } from './entity';
 import { MessagesModule } from './messages/messages.module';
 import { AuthGuard } from './common/auth.guard';
+import { MessagesResolver } from './messages/messages.resolver';
 
 const Env: Enviroment = getEnv();
 config();
@@ -49,10 +50,13 @@ config();
       installSubscriptionHandlers: true,
       context: ({ req }) => ({ ...req })
     }),
-    MessagesModule,
+    // TypeOrmModule.forFeature([UserRepository]),
+    // UserService,
+    // MessagesModule,
   ],
   controllers: [AppController, AuthController, UserController, RolesController, ProductController, LikeProductController, PaymentController, OrderItemsController, OrderController],
   providers: [AuthService, AuthGuard, LocalStrategy, JwtStrategy, UserService, RoleService, ProductService, LikeProductService, PaymentService, OrderItemService, OrderService,
+    MessagesResolver,
     {
       provide: APP_GUARD,
       useClass: RolesGuard,

@@ -3,12 +3,44 @@ type Message {
     description: String!
 }
 
+type ProductModel {
+    id: String
+    name: String
+    address: String
+    description: String
+    status: Boolean
+    price: Int
+    currency: String
+    userId: String
+    user: UserModel
+}
+
 type Query {
     getMessages(id: Int!): [Message]!
     message: [Message]!
+    product(id: String!): ProductModel!
+    getProductsByPagination(take: Int!, skip: Int!): [ProductModel]!
+    products: [ProductModel]!
+}
+
+type UserModel {
+    id: String
+    firstName: String
+    lastName: String
+    password: String
+    email: String
+    role: String
+}
+
+input CreateUser {
+    firstName: String!
+    lastName: String!
+    email: String!
+    password: String!
+    role: String
 }
 
 type Mutation {
-    createMessage(description: String!): Message!
+    createMessage(createUser: CreateUser!): UserModel!
 }
 

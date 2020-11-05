@@ -21,6 +21,43 @@ export class ProductService {
         return getProduct;
     }
 
+    public async getProductByIdGraph(id: string): Promise<ProductModel> {
+        const product: ProductModel = await this.productRepository.findOne({
+            where: [{ id }],
+            relations: ['user']
+        });
+        
+        return product;
+    }
+
+    public async getProductsByPagination(take: number, skip: number): Promise<ProductModel[]> {
+        const product: ProductModel[] = await this.productRepository
+        .createQueryBuilder('product')
+        .leftJoinAndSelect('product.user', 'user')
+        .orderBy('product.name', 'ASC')
+        .take(take)
+        .skip(skip)
+        .getMany();
+
+        return product;
+    }
+
+    // public async getProductsByPagination(take: number, skip: number): Promise<ProductModel[]> {
+    //     const product: ProductModel[] = await this.productRepository.find({
+    //         skip,
+    //         take,
+    //         relations: ['user']
+    //     })
+
+    //     return product;
+    // }
+
+    public async getProducts(): Promise<ProductModel[]> {
+        const getProduct: ProductModel[] = await this.productRepository.find({relations: ['user']});
+
+        return getProduct;
+    }
+
     public async getProductById(id: string): Promise<ProductModel> {
         const product: ProductModel = await this.productRepository.findOne({
             select: ['name', 'address', 'description', 'status', 'currency', 'price'],
@@ -66,6 +103,34 @@ export class ProductService {
 
         return product;
     }
+
+    // public async deleteProductById(productId: string): Promise<Boolean> {
+    //     const likeProductsByUserId: LikeProduct[] = await this.likeProductRepository.find({
+    //         where: [{productId: productId}]
+    //     });
+
+    //     if (likeProductsByUserId) {
+    //         likeProductsByUserId.forEach(async likeProductByUserId => {
+    //             const deletedLikeProduct: DeleteResult = await this.likeProductRepository.delete(likeProductByUserId.id);
+    //             if(!deletedLikeProduct.affected) {
+    //                 const message: string = 'removal not completed, try again';
+    
+    //                 return message;
+    //             }
+    //         });
+    //     }
+
+    //     const deletedOrderItem: string | boolean = await this.orderItemService.deleteOrderItemByProductId(productId);
+    //     if (deletedOrderItem !== true) {
+    //         const message: string = 'removal not completed, try again';
+            
+    //         return message;
+    //     }
+
+    //     const result: DeleteResult = await this.productRepository.delete(productId);
+        
+    //     return result;
+    // }
 
     public async deleteProduct(productId: string): Promise<DeleteResult | string> {
         const likeProductsByUserId: LikeProduct[] = await this.likeProductRepository.find({
