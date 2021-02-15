@@ -25,14 +25,14 @@ export class MessagesResolver {
         return this.messagesThstReallyShouldBeInADB.filter(mes => mes.id == id);
     }
 
-    @Query('message')
+    @Query()
     // @UseGuards(AuthGuard)
-    async message() {
-        return this.messagesThstReallyShouldBeInADB
+    async users(): Promise<UserModel[]> {
+        return await this.userService.getUsersGraph();
     }
 
     @Query()
-    async product(@Args('id', { type: () => String }) id: string) {
+    async product(@Args('id', { type: () => String }) id: string): Promise<ProductModel> {
         return await this.productService.getProductByIdGraph(id);
     }
 
@@ -47,12 +47,12 @@ export class MessagesResolver {
     }
 
     @Mutation()
-    async createMessage(@Args('createUser', { type: () => CreateUser } ) createUser: CreateUser): Promise<UserModel> {
+    async createUser(@Args('createUser', { type: () => CreateUser } ) createUser: CreateUser): Promise<UserModel> {
         return await this.userService.singUp(createUser);
     }
 
-    // @Mutation()
-    // async deleteProduct(@Args('id', { type: () => String } ) id: number): Promise<Boolean> {
-    //     return await this.productService.deleteProductById(id);
-    // }
+    @Mutation()
+    async deleteProduct(@Args('id', { type: () => String } ) id: string): Promise<boolean> {
+        return await this.productService.deleteProductById(id);
+    }
 }

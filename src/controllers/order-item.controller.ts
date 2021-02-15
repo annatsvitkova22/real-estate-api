@@ -35,9 +35,9 @@ export class OrderItemsController {
         return orderItem;
     }
 
-    @UseGuards(AuthGuard('jwt'))
+    // @UseGuards(AuthGuard('jwt'))
     @Post()
-    @Roles('user')
+    // @Roles('user')
     public async createOrderItem(@Body() orderItem: OrderItemModel): Promise<OrderItemModel | string> {
         const createdOrderItem: OrderItemModel | string = await this.orderItemService.createOrderItem(orderItem);
 

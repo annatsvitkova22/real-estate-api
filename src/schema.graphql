@@ -15,9 +15,29 @@ type ProductModel {
     user: UserModel
 }
 
+type Product {
+    id: String
+    name: String
+    address: String
+    description: String
+    status: Boolean
+    price: Int
+    currency: String
+    userId: String
+}
+
+type User {
+    id: String
+    firstName: String
+    lastName: String
+    password: String
+    email: String
+    product: Product
+}
+
 type Query {
     getMessages(id: Int!): [Message]!
-    message: [Message]!
+    users: [User]!
     product(id: String!): ProductModel!
     getProductsByPagination(take: Int!, skip: Int!): [ProductModel]!
     products: [ProductModel]!
@@ -41,6 +61,7 @@ input CreateUser {
 }
 
 type Mutation {
-    createMessage(createUser: CreateUser!): UserModel!
+    createUser(createUser: CreateUser!): UserModel!
+    deleteProduct(id: String!): Boolean!
 }
 

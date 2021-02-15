@@ -1,4 +1,4 @@
-import { Injectable, forwardRef, Inject } from '@nestjs/common'
+import { Injectable, forwardRef, Inject, HttpException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DeleteResult } from 'typeorm';
 
@@ -104,33 +104,38 @@ export class ProductService {
         return product;
     }
 
-    // public async deleteProductById(productId: string): Promise<Boolean> {
-    //     const likeProductsByUserId: LikeProduct[] = await this.likeProductRepository.find({
-    //         where: [{productId: productId}]
-    //     });
+    public async deleteProductById(productId: string): Promise<boolean> {
+        const likeProductsByUserId: LikeProduct[] = await this.likeProductRepository.find({
+            where: [{productId: productId}]
+        });
 
-    //     if (likeProductsByUserId) {
-    //         likeProductsByUserId.forEach(async likeProductByUserId => {
-    //             const deletedLikeProduct: DeleteResult = await this.likeProductRepository.delete(likeProductByUserId.id);
-    //             if(!deletedLikeProduct.affected) {
-    //                 const message: string = 'removal not completed, try again';
-    
-    //                 return message;
-    //             }
-    //         });
-    //     }
+        if (likeProductsByUserId) {
+            likeProductsByUserId.forEach(async likeProductByUserId => {
+                const deletedLikeProduct: DeleteResult = await this.likeProductRepository.delete(likeProductByUserId.id);
+                if(!deletedLikeProduct.affected) {
+                    throw  new HttpException({
+                        status: 406,
+                        error: 'removal not completed, try again',
+                    }, 406);
+                }
+            });
+        }
 
-    //     const deletedOrderItem: string | boolean = await this.orderItemService.deleteOrderItemByProductId(productId);
-    //     if (deletedOrderItem !== true) {
-    //         const message: string = 'removal not completed, try again';
-            
-    //         return message;
-    //     }
+        const deletedOrderItem: string | boolean = await this.orderItemService.deleteOrderItemByProductId(productId);
+        if (deletedOrderItem !== true) {
+            throw  new HttpException({
+                status: 406,
+                error: 'removal not completed, try again',
+            }, 406);
+        }
+        let result : boolean = false;
+        const responseResult: DeleteResult = await this.productRepository.delete(productId);
+        if(responseResult.affected) {
+            result = true
+        }
 
-    //     const result: DeleteResult = await this.productRepository.delete(productId);
-        
-    //     return result;
-    // }
+        return result;
+    }
 
     public async deleteProduct(productId: string): Promise<DeleteResult | string> {
         const likeProductsByUserId: LikeProduct[] = await this.likeProductRepository.find({

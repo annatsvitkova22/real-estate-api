@@ -27,6 +27,16 @@ export class UserService {
         return getUsers;
     }
 
+    public async getUsersGraph(): Promise<UserModel[]> {
+        const user: UserModel[] = await this.userRepository
+        .createQueryBuilder('user')
+        .innerJoinAndSelect('user.productConnection', 'userId')
+        .getMany();
+
+        console.log('user', user)
+        return user;
+    }
+
     public async getUserById(id: number): Promise<UserModel> {
         const user: UserModel = await this.userRepository.findOne({
             select: ['firstName', 'lastName', 'email'],

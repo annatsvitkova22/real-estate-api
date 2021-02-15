@@ -26,9 +26,9 @@ export class RolesController {
         return role;
     }
 
-    @UseGuards(AuthGuard('jwt'))
+    // @UseGuards(AuthGuard('jwt'))
     @Get()
-    @Roles('admin')
+    // @Roles('admin')
     public async getAllRole(): Promise<RoleModel[]> {
         const role: RoleModel[] = await this.roleService.getRoles();
         

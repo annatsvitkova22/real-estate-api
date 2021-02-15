@@ -25,9 +25,9 @@ export class OrderController {
         return order;
     }
 
-    @UseGuards(AuthGuard('jwt'))
+    // @UseGuards(AuthGuard('jwt'))
     @Get()
-    @Roles('admin')
+    // @Roles('admin')
     public async getOrderAll(): Promise<OrderModel[]> {
         const order: OrderModel[] = await this.orderService.getOrders();
 
